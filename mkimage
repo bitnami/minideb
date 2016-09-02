@@ -13,6 +13,10 @@ LOGFILE=${TARGET}.log
 exec >  >(tee -ia $LOGFILE)
 exec 2> >(tee -ia $LOGFILE >&2)
 
+DEBOOTSTRAP_DIR=$(mktemp -d)
+cp -a /usr/share/debootstrap/* $DEBOOTSTRAP_DIR
+cp -a $ROOT/debootstrap/* $DEBOOTSTRAP_DIR/scripts
+
 export DEBIAN_FRONTEND=noninteractive
 
 DIRS_TO_TRIM="/usr/share/man
@@ -63,7 +67,7 @@ util-linux
 
 rootfsDir=$(mktemp -d)
 echo "Building base in $rootfsDir"
-debootstrap --force-check-gpg --variant container --foreign ${DIST} "$rootfsDir"
+DEBOOTSTRAP_DIR=$DEBOOTSTRAP_DIR debootstrap --force-check-gpg --variant container --foreign ${DIST} "$rootfsDir"
 (cd ${rootfsDir}/var/cache/apt/archives/ && find . -type f -print0 | xargs -0 sha256sum | sort -k2) | tee "$TARGET.manifest"
 chroot "$rootfsDir" debootstrap/debootstrap --second-stage
 
