@@ -2,8 +2,16 @@
 set -e
 set -u
 
+ROOT=$(cd $(dirname $0) && pwd)
+
 TARGET=${1:?Specify the target filename}
 DIST=${2:-stable}
+
+LOGFILE=${TARGET}.log
+
+>$LOGFILE
+exec >  >(tee -ia $LOGFILE)
+exec 2> >(tee -ia $LOGFILE >&2)
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -54,8 +62,9 @@ util-linux
 "
 
 rootfsDir=$(mktemp -d)
-echo "Building base"
-debootstrap --force-check-gpg --variant minbase --foreign $DIST "$rootfsDir"
+echo "Building base in $rootfsDir"
+debootstrap --force-check-gpg --variant container --foreign ${DIST} "$rootfsDir"
+(cd ${rootfsDir}/var/cache/apt/archives/ && find . -type f -print0 | xargs -0 sha256sum | sort -k2) | tee "$TARGET.manifest"
 chroot "$rootfsDir" debootstrap/debootstrap --second-stage
 
 echo "Applying docker-specific tweaks"
@@ -201,5 +210,6 @@ echo "Built in $rootfsDir"
 
 tar cf "$TARGET" -C "$rootfsDir" .
 rm -r "$rootfsDir"
+rm -r "$DEBOOTSTRAP_DIR"
 
 echo "Image built at ${TARGET}"
