@@ -50,5 +50,9 @@ TODO
 ----
 
   - Look at whether the process produces the same bits given the same inputs
+    - It does not. `/etc/shadow` and `/etc/group` change, as well as `/var/cache/ldconfig/aux-cache`.
   - Can we use a custom debootstrap script to avoid removing packages?
+    - Yes, and allows to define a package set to include, rather than a list of packages to remove.
+    - Requires to install some packages (e.g. mount) for running the process, that we would still
+      want to remove afterwards.
   - `install_packages` to also run the docs/locales/etc. cleanups
