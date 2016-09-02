@@ -1,0 +1,26 @@
+FROM jamesw/minideb:unstable
+
+MAINTAINER James Westby <james@bitnami.com>
+
+RUN install_packages curl gnupg busybox
+
+ADD nami-linux-x64.tar.gz /opt/bitnami/
+RUN ln -s /opt/bitnami/nami-linux-x64 /opt/bitnami/nami
+
+ENV TINI_VERSION v0.9.0
+
+RUN cd /tmp && \
+  curl -sSLO https://github.com/krallin/tini/releases/download/$TINI_VERSION/tini && \
+  curl -sSLO https://github.com/krallin/tini/releases/download/$TINI_VERSION/tini.asc && \
+  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys 6380DC428747F6C393FEACA59A84159D7001A4E5 && \
+  gpg --verify tini.asc && \
+  chmod +x tini && \
+  mv tini /usr/local/bin/ && \
+  rm tini.asc
+
+ENV PATH=/opt/bitnami/nami/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+ADD rootfs /
+
+# Compatibilty as the modules still expect to find harpoon
+RUN ln -s /opt/bitnami/nami/bin/nami /opt/bitnami/nami/bin/harpoon

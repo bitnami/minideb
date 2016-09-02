@@ -1,0 +1,37 @@
+#!/bin/bash
+
+set -e
+set -u
+
+DISTS="jessie
+unstable
+"
+LATEST=jessie
+
+BASENAME=jamesw/minideb
+NAMINAME=jamesw/mininami
+
+mkdir -p build
+
+for DIST in $DISTS; do
+   [ -f namibase/Dockerfile-$DIST ] || (echo "Unknown distribution: $DIST" && exit 1)
+   echo "============================================"
+   echo "Building $BASENAME:$DIST"
+   echo "============================================"
+   ./mkimage build/$DIST.tar $DIST
+   docker import --change "CMD /bin/bash" build/$DIST.tar $BASENAME:$DIST
+   echo "============================================"
+   echo "Running tests for $BASENAME:$DIST"
+   echo "============================================"
+   ./test $BASENAME:$DIST
+   echo "============================================"
+   echo "Building $NAMINAME:$DIST"
+   echo "============================================"
+   docker build -t $NAMINAME:$DIST -f namibase/Dockerfile-$DIST namibase
+   echo "============================================"
+   echo "Running tests for $NAMINAME:$DIST"
+   echo "============================================"
+   ./namibase/test $NAMINAME:$DIST
+done
+docker tag $BASENAME:$LATEST $BASENAME:latest
+docker tag $NAMINAME:$LATEST $NAMINAME:latest

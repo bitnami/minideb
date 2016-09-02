@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DISTS="jessie
+unstable
+"
+
+BASENAME=jamesw/minideb
+NAMINAME=jamesw/mininami
+
+for DIST in $DISTS; do
+    docker push $BASENAME:$DIST
+    docker push $NAMINAME:$DIST
+done
+docker push $BASENAME:latest
+docker push $NAMINAME:latest
