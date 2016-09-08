@@ -25,14 +25,5 @@ for DIST in $DISTS; do
    echo "============================================"
    ./test $IMPORTED
    docker tag $IMPORTED $BASENAME:$DIST
-   echo "============================================"
-   echo "Building $NAMINAME:$DIST"
-   echo "============================================"
-   docker build -t $NAMINAME:$DIST -f namibase/Dockerfile-$DIST namibase
-   echo "============================================"
-   echo "Running tests for $NAMINAME:$DIST"
-   echo "============================================"
-   ./namibase/test $NAMINAME:$DIST
 done
 docker tag $BASENAME:$LATEST $BASENAME:latest
-docker tag $NAMINAME:$LATEST $NAMINAME:latest
