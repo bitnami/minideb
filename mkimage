@@ -193,8 +193,9 @@ cat > "$rootfsDir/usr/sbin/install_packages" <<-'EOF'
 #!/bin/sh
 set -e
 set -u
-apt-get update
-apt-get install -y "$@"
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y --force-yes "$@"
 rm -r /var/lib/apt/lists /var/cache/apt/archives
 EOF
 chmod 0755 "$rootfsDir/usr/sbin/install_packages"
