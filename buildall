@@ -19,11 +19,12 @@ for DIST in $DISTS; do
    echo "Building $BASENAME:$DIST"
    echo "============================================"
    ./mkimage build/$DIST.tar $DIST
-   docker import --change "CMD /bin/bash" build/$DIST.tar $BASENAME:$DIST
+   IMPORTED=$(docker import --change "CMD /bin/bash" build/$DIST.tar)
    echo "============================================"
    echo "Running tests for $BASENAME:$DIST"
    echo "============================================"
-   ./test $BASENAME:$DIST
+   ./test $IMPORTED
+   docker tag $IMPORTED $BASENAME:$DIST
    echo "============================================"
    echo "Building $NAMINAME:$DIST"
    echo "============================================"
