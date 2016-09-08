@@ -68,8 +68,14 @@ util-linux
 rootfsDir=$(mktemp -d)
 echo "Building base in $rootfsDir"
 DEBOOTSTRAP_DIR=$DEBOOTSTRAP_DIR debootstrap --variant container --foreign ${DIST} "$rootfsDir"
-(cd ${rootfsDir}/var/cache/apt/archives/ && find . -type f -print0 | xargs -0 sha256sum | sort -k2) | tee "$TARGET.manifest"
 chroot "$rootfsDir" bash debootstrap/debootstrap --second-stage
+
+echo -e "deb http://httpredir.debian.org/debian jessie main\ndeb http://security.debian.org/ jessie/updates main" > "$rootfsDir/etc/apt/sources.list"
+
+chroot "$rootfsDir" apt-get update
+chroot "$rootfsDir" apt-get upgrade -y --force-yes -o Dpkg::Options::="--force-confdef"
+
+chroot "rootfsDir" dpkg -l | tee "$TARGET.manifest"
 
 echo "Applying docker-specific tweaks"
 # These are copied from the docker contrib/mkimage/debootstrap script.
