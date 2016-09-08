@@ -76,7 +76,7 @@ if [ "$DIST" != "unstable" ]; then
 fi
 
 chroot "$rootfsDir" apt-get update
-chroot "$rootfsDir" apt-get upgrade -y --force-yes -o Dpkg::Options::="--force-confdef"
+chroot "$rootfsDir" apt-get upgrade -y -o Dpkg::Options::="--force-confdef"
 
 chroot "rootfsDir" dpkg -l | tee "$TARGET.manifest"
 
@@ -203,7 +203,7 @@ set -e
 set -u
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y --force-yes "$@"
+apt-get install -y "$@"
 rm -r /var/lib/apt/lists /var/cache/apt/archives
 EOF
 chmod 0755 "$rootfsDir/usr/sbin/install_packages"
