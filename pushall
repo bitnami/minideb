@@ -6,6 +6,10 @@ unstable
 
 BASENAME=jamesw/minideb
 
+if [ -n "$DOCKER_PASSWORD" ]; then
+    docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+fi
+
 for DIST in $DISTS; do
     docker push $BASENAME:$DIST
 done

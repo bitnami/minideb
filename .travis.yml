@@ -6,3 +6,9 @@ services:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y debian-archive-keyring debootstrap
+deploy:
+  provider: script
+  script: pushall
+  skip_cleanup: true
+  on:
+    branch: master
