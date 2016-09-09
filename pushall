@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -u
+
 DISTS="jessie
 unstable
 "
