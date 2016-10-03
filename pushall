@@ -5,6 +5,7 @@ set -u
 
 DISTS="jessie
 unstable
+wheezy
 "
 
 BASENAME=jamesw/minideb

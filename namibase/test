@@ -1,8 +1,0 @@
-#!/bin/bash
-
-set -eu
-
-IMAGE_ID=$1
-
-docker run --rm "$IMAGE_ID" nami --version
-docker run --rm "$IMAGE_ID" bash -c "bitnami-pkg install memcached-1.4.25-2 --checksum b664b38a29a3e69f9ef61599aff647a868e00e8da8baccc976def58b2cd16b4e && [ -x /opt/bitnami/memcached/bin/memcached ]"
