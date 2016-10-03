@@ -5,16 +5,16 @@ set -u
 
 DISTS="jessie
 unstable
+wheezy
 "
 LATEST=jessie
 
 BASENAME=jamesw/minideb
-NAMINAME=jamesw/mininami
 
 mkdir -p build
 
 for DIST in $DISTS; do
-   [ -f namibase/Dockerfile-$DIST ] || (echo "Unknown distribution: $DIST" && exit 1)
+   [ -f debootstrap/$DIST ] || (echo "buildall: Unknown distribution: $DIST" && exit 1)
    echo "============================================"
    echo "Building $BASENAME:$DIST"
    echo "============================================"
