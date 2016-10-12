@@ -9,6 +9,7 @@ wheezy
 "
 
 BASENAME=jamesw/minideb
+GCR_BASENAME=gcr.io/bitnamigcetest2/minideb
 
 if [ -n "$DOCKER_PASSWORD" ]; then
     docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
@@ -18,3 +19,14 @@ for DIST in $DISTS; do
     docker push $BASENAME:$DIST
 done
 docker push $BASENAME:latest
+
+if [ -n "$GCR_KEY" ]; then
+    echo "$GCR_KEY" > keyfile.json
+    gcloud auth activate-service-account $GCR_EMAIL --key-file keyfile.json
+fi
+
+for DIST in $DISTS; do
+    gcloud docker push $GCR_BASENAME:$DIST
+done
+gcloud docker push $GCR_BASENAME:latest
+

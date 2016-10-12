@@ -10,6 +10,7 @@ wheezy
 LATEST=jessie
 
 BASENAME=jamesw/minideb
+GCR_BASENAME=gcr.io/bitnamigcetest2/minideb
 
 mkdir -p build
 
@@ -25,5 +26,7 @@ for DIST in $DISTS; do
    echo "============================================"
    ./test $IMPORTED
    docker tag $IMPORTED $BASENAME:$DIST
+   docker tag $IMPORTED $GCR_BASENAME:$DIST
 done
 docker tag $BASENAME:$LATEST $BASENAME:latest
+docker tag $GCR_BASENAME:$LATEST $GCR_BASENAME:latest
