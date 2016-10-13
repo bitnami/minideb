@@ -8,8 +8,8 @@ unstable
 wheezy
 "
 
-BASENAME=jamesw/minideb
-GCR_BASENAME=gcr.io/bitnamigcetest2/minideb
+BASENAME=bitnami/minideb
+GCR_BASENAME=gcr.io/bitnami-containers/minideb
 
 if [ -n "$DOCKER_PASSWORD" ]; then
     docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
