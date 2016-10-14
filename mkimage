@@ -13,7 +13,7 @@ LOGFILE=${TARGET}.log
 exec >  >(tee -ia $LOGFILE)
 exec 2> >(tee -ia $LOGFILE >&2)
 
-DEBOOTSTRAP_DIR=$(mktemp -d)
+DEBOOTSTRAP_DIR=$(mktemp -d -p . minideb-debootstrap.tmpXXXXXX)
 cp -a /usr/share/debootstrap/* $DEBOOTSTRAP_DIR
 cp -a $ROOT/debootstrap/* $DEBOOTSTRAP_DIR/scripts
 
@@ -64,7 +64,7 @@ udev
 util-linux
 "
 
-rootfsDir=$(mktemp -d)
+rootfsDir=$(mktemp -d -p . minideb.tmpXXXXXX)
 echo "Building base in $rootfsDir"
 DEBOOTSTRAP_DIR=$DEBOOTSTRAP_DIR debootstrap --variant container --foreign ${DIST} "$rootfsDir"
 chroot "$rootfsDir" bash debootstrap/debootstrap --second-stage
