@@ -1,0 +1,13 @@
+machine:
+  services:
+    - docker
+dependencies:
+  pre:
+    - sudo apt-get update; sudo apt-get install -y debootstrap debian-archive-keyring
+  override:
+    - sudo bash buildall
+deployment:
+  release:
+    branch: master
+    commands:
+      - bash pushall
