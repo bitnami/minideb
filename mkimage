@@ -20,7 +20,6 @@ cp -a $ROOT/debootstrap/* $DEBOOTSTRAP_DIR/scripts
 export DEBIAN_FRONTEND=noninteractive
 
 DIRS_TO_TRIM="/usr/share/man
-/usr/share/doc
 /var/cache/apt
 /var/lib/apt/lists
 /usr/share/locale
@@ -214,6 +213,8 @@ chroot "$rootfsDir" dpkg --force-all -P $PACKAGES_TO_EXCLUDE
 for DIR in $DIRS_TO_TRIM; do
   rm -r "$rootfsDir/$DIR"/*
 done
+find "$rootfsDir/usr/share/doc" -mindepth 1 -not -name copyright -not -type d -delete
+find "$rootfsDir/usr/share/doc" -mindepth 1 -type d -empty -delete
 echo "Total size"
 du -skh "$rootfsDir"
 echo "Package sizes"
