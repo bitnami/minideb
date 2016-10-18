@@ -8,4 +8,7 @@ docker run --rm "$IMAGE_ID" dpkg -l apt
 docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" bash -c 'apt-get update && apt-get -y install less && less --help >/dev/null'
 docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" bash -c 'install_packages less  && less --help >/dev/null && [ ! -e /var/cache/apt/archives ] && [ ! -e /var/lib/apt/lists ]'
 docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" bash -c '[ ! -e /debootstrap ]'
+# Ask apt to install all packages that are already installed, has the effect of checking the
+# dependencies are correctly available
+docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" bash -c 'apt-get update && (dpkg-query -W -f \${Package} | while read pkg; do apt-get install $pkg; done)'
 
