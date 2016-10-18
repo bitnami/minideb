@@ -27,43 +27,6 @@ DIRS_TO_TRIM="/usr/share/man
 /usr/share/info
 "
 
-PACKAGES_TO_EXCLUDE="acl
-bsdutils
-debconf-i18n
-dmsetup
-e2fslibs
-e2fsprogs
-gcc-4.8-base
-init
-initscripts
-insserv
-libcap2
-libcap2-bin
-libcryptsetup4
-libdevmapper1.02.1
-libkmod2
-liblocale-gettext-perl
-libmount1
-libncursesw5
-libprocps3
-libsystemd0
-libtext-charwidth-perl
-libtext-iconv-perl
-libtext-wrapi18n-perl
-libudev1
-mount
-ncurses-bin
-ncurses-base
-procps
-startpar
-systemd
-systemd-sysv
-sysv-rc
-sysvinit-utils
-udev
-util-linux
-"
-
 rootfsDir=$(mktemp -d)
 echo "Building base in $rootfsDir"
 DEBOOTSTRAP_DIR=$DEBOOTSTRAP_DIR debootstrap --variant container --foreign ${DIST} "$rootfsDir"
@@ -209,7 +172,6 @@ chmod 0755 "$rootfsDir/usr/sbin/install_packages"
 
 
 echo "Trimming down"
-chroot "$rootfsDir" dpkg --force-all -P $PACKAGES_TO_EXCLUDE
 for DIR in $DIRS_TO_TRIM; do
   rm -r "$rootfsDir/$DIR"/*
 done

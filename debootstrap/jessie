@@ -36,10 +36,12 @@ work_out_debs () {
     # mawk as it is used by dpkg
     # passwd for managing user accounts if run as non-root.
     # sed as a very commonly used tool
+    # sysv-rc for update-rc.d, required when installing initscripts in postinsts
     # tar as uncompressing tarballs is super common when installing things.
     # tzdata for handling timezones
-    # mount is required for mounting /proc during installation, may remove after
-	required="adduser base-files base-passwd bash coreutils dash debian-archive-keyring diffutils dpkg findutils grep gzip hostname libc-bin login lsb-base mawk passwd sed tar tzdata mount"
+    # util-linux for getopt
+    # mount is required for mounting /proc during debootstrap
+	required="adduser base-files base-passwd bash coreutils dash debian-archive-keyring diffutils dpkg findutils grep gzip hostname libc-bin login lsb-base mawk passwd sed sysv-rc tar tzdata util-linux mount"
 
 	base="apt"
 
