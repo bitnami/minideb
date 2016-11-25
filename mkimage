@@ -165,7 +165,7 @@ set -e
 set -u
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y "$@"
+apt-get install -y --no-install-recommends "$@"
 rm -r /var/lib/apt/lists /var/cache/apt/archives
 EOF
 chmod 0755 "$rootfsDir/usr/sbin/install_packages"
