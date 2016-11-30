@@ -17,10 +17,14 @@ small images, and having many quality packages available
 for easy integration.
 
 These images also include an `install_packages` command
-that you can use instead of apt. This does two things:
+that you can use instead of apt. This takes care of some things
+for you:
 
   1. Install the named packages, skipping prompts etc.
   2. Clean up the apt metadata afterwards to keep the image small.
+  3. Retrying if apt fails. Sometimes a package will fail to download
+     due to a network issue, and this may fix that, which is
+     particularly useful in an automated build pipeline.
 
 e.g.
 
