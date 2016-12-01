@@ -166,7 +166,7 @@ set -u
 export DEBIAN_FRONTEND=noninteractive
 n=0
 max=2
-until [ $n -gt max  ]; do
+until [ $n -gt $max ]; do
     set +e
     (
       apt-get update -qq &&
