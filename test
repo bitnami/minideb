@@ -4,11 +4,39 @@ set -eu
 
 IMAGE_ID=$1
 
-docker run --rm "$IMAGE_ID" dpkg -l apt
-docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" bash -c 'apt-get update && apt-get -y install less && less --help >/dev/null'
-docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" bash -c 'install_packages less  && less --help >/dev/null && [ ! -e /var/cache/apt/archives ] && [ ! -e /var/lib/apt/lists ]'
-docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" bash -c '[ ! -e /debootstrap ]'
+function desc() {
+    echo "================================"
+    echo -n "TEST: "
+    echo "$@"
+    echo "================================"
+}
+
+function test() {
+    docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" "$@"
+    echo ""
+    echo TEST: OK
+    echo ""
+}
+
+desc "Checking that apt is installed"
+test dpkg -l apt
+
+desc "Checking that a package can be installed with apt"
+test bash -c 'apt-get update && apt-get -y install less && less --help >/dev/null'
+
+desc "Checking that a package can be installed with install_packages and that it removes cache dirs"
+test bash -c 'install_packages less  && less --help >/dev/null && [ ! -e /var/cache/apt/archives ] && [ ! -e /var/lib/apt/lists ]'
+
+desc "Checking that the debootstrap dir wasn't left in the image"
+test bash -c '[ ! -e /debootstrap ]'
+
+desc "Check that all base packages are correctly installed, including dependencies"
 # Ask apt to install all packages that are already installed, has the effect of checking the
 # dependencies are correctly available
-docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" bash -c 'apt-get update && (dpkg-query -W -f \${Package} | while read pkg; do apt-get install $pkg; done)'
+test bash -c 'apt-get update && (dpkg-query -W -f \${Package} | while read pkg; do apt-get install $pkg; done)'
 
+desc "Check that install_packages doesn't loop forever on failures"
+# This won't install and will fail. The key is that the retry loop will stop after a few iterations.
+# We check that we didn't install the package afterwards, just in case a package gets added with that name.
+# We wrap the whole thing in a timeout so that it doesn't loop forever. It's not ideal to have a timeout as there may be spurious failures if the network is slow.
+test bash -c 'timeout 60 bash -c "(install_packages thispackagebetternotexist || true) && ! dpkg -l thispackagebetternotexist"'
