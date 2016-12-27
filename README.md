@@ -47,11 +47,11 @@ Docker
 
 You can use the image directly, e.g.
 
-    $ docker run --rm -it minideb:latest
+    $ docker run --rm -it bitnami/minideb:latest
 
 There are tags for the different Debian releases.
 
-    $ docker run --rm -it minideb:jessie
+    $ docker run --rm -it bitnami/minideb:jessie
 
 The images are built daily and have the security release enabled,
 so will contain any security updates released more than 24 hours
@@ -59,7 +59,7 @@ ago.
 
 You can also use the images as a base for your own `Dockerfile`:
 
-    FROM minideb:jessie
+    FROM bitnami/minideb:jessie
 
 Building
 --------
