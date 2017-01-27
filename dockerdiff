@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+set -u
+
+IMAGE1=$1
+IMAGE2=$2
+
+TMPDIR=$(mktemp -d -t dockerdiff.XXXXXXXXXX)
+
+docker run --rm $IMAGE1 dpkg -l > $TMPDIR/a
+docker run --rm $IMAGE2 dpkg -l > $TMPDIR/b
+
+exec diff -u $TMPDIR/a $TMPDIR/b
