@@ -2,12 +2,9 @@
 
 set -e
 set -u
+set -o pipefail
 
-ONLY_IF_CHANGED=${ONLY_IF_CHANGED:-}
-
-if [ "${TRAVIS_EVENT_TYPE:-}" == "cron" ]; then
-    ONLY_IF_CHANGED=true
-fi
+PUSH_IF_CHANGED=${PUSH_IF_CHANGED:-}
 
 DISTS="jessie
 unstable
@@ -27,7 +24,7 @@ if [ -n "${GCR_KEY:-}" ]; then
 fi
 
 for DIST in $DISTS; do
-    if [ -n ${ONLY_IF_CHANGED} ]; then
+    if [ -z ${PUSH_IF_CHANGED} ]; then
         docker tag $BASENAME:$DIST $BASENAME:$DIST-save
         if docker pull $BASENAME:$DIST; then
             if ./dockerdiff $BASENAME:$DIST $BASENAME:$DIST-save; then

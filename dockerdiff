@@ -2,13 +2,20 @@
 
 set -e
 set -u
+set -o pipefail
 
 IMAGE1=$1
 IMAGE2=$2
 
-TMPDIR=$(mktemp -d -t dockerdiff.XXXXXXXXXX)
+inspect() {
+    docker inspect $1 | jq ".[0]|del(.Id,.RepoTags,.RepoDigests,.Created)"
+}
 
-docker run --rm $IMAGE1 dpkg -l > $TMPDIR/a
-docker run --rm $IMAGE2 dpkg -l > $TMPDIR/b
+lslr() {
+    docker run --rm $1 ls -lR /
+}
 
-exec diff -u $TMPDIR/a $TMPDIR/b
+if ! diff -u <(inspect $IMAGE1) <(inspect $IMAGE2); then
+    diff -u <(lslr $IMAGE1) <(lslr $IMAGE2)
+    exit 1
+fi
