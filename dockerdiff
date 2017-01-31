@@ -16,7 +16,7 @@ dpkgl() {
 }
 
 lslr() {
-    docker run --rm $1 bash -c 'find / -path /proc -prune -o -print0 | xargs -0 ls -ld'
+    docker run --rm $1 bash -c 'find / -xdev -print0 | sort -z | xargs -0 ls -ld'
 }
 
 if ! diff -u <(inspect $IMAGE1) <(inspect $IMAGE2); then
