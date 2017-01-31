@@ -11,11 +11,16 @@ inspect() {
     docker inspect $1 | jq ".[0]|del(.Id,.RepoTags,.RepoDigests,.Created)"
 }
 
+dpkgl() {
+    docker run --rm $1 dpkg -l
+}
+
 lslr() {
     docker run --rm $1 ls -lR /
 }
 
 if ! diff -u <(inspect $IMAGE1) <(inspect $IMAGE2); then
-    diff -u <(lslr $IMAGE1) <(lslr $IMAGE2)
+    diff -u <(dpkgl $IMAGE1) <(dpkgl $IMAGE2) || true
+    diff -u <(lslr $IMAGE1) <(lslr $IMAGE2) || true
     exit 1
 fi
