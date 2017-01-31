@@ -2,6 +2,7 @@
 
 set -e
 set -u
+set -o pipefail
 
 DISTS="jessie
 unstable
@@ -14,17 +15,34 @@ GCR_BASENAME=gcr.io/bitnami-containers/minideb
 
 mkdir -p build
 
+import() {
+    SOURCE=$1
+    docker import --change "CMD /bin/bash" -m "From Bitnami with love." $SOURCE
+}
+
 for DIST in $DISTS; do
    [ -f debootstrap/$DIST ] || (echo "buildall: Unknown distribution: $DIST" && exit 1)
    echo "============================================"
    echo "Building $BASENAME:$DIST"
    echo "============================================"
    ./mkimage build/$DIST.tar $DIST
-   IMPORTED=$(docker import --change "CMD /bin/bash" build/$DIST.tar)
+   IMPORTED=$(import build/$DIST.tar)
    echo "============================================"
    echo "Running tests for $BASENAME:$DIST"
    echo "============================================"
    ./test $IMPORTED
+   echo "============================================"
+   echo "Rebuilding $BASENAME:$DIST to test reproducability"
+   echo "============================================"
+   ./mkimage build/${DIST}-repro.tar $DIST
+   REPRO=$(import build/${DIST}-repro.tar)
+   if ! ./dockerdiff $IMPORTED $REPRO; then
+       echo "$BASENAME:$DIST differs after a rebuild. Examine $IMPORTED and $REPRO"
+       echo "to find the differences and fix the build to be reproducible again."
+       exit 1
+   fi
+   rm build/${DIST}-repro.tar
+   docker rmi $REPRO
    docker tag $IMPORTED $BASENAME:$DIST
    docker tag $IMPORTED $GCR_BASENAME:$DIST
 done

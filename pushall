@@ -2,31 +2,38 @@
 
 set -e
 set -u
+set -o pipefail
+
+PUSH_IF_CHANGED=${PUSH_IF_CHANGED:-}
 
 DISTS="jessie
 unstable
 wheezy
+latest
 "
 
 BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb
 
-if [ -n "$DOCKER_PASSWORD" ]; then
+if [ -n "${DOCKER_PASSWORD:-}" ]; then
     docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 fi
 
-for DIST in $DISTS; do
-    docker push $BASENAME:$DIST
-done
-docker push $BASENAME:latest
-
-if [ -n "$GCR_KEY" ]; then
-    echo "$GCR_KEY" > keyfile.json
-    gcloud auth activate-service-account $GCR_EMAIL --key-file keyfile.json
+if [ -n "${GCR_KEY:-}" ]; then
+    gcloud auth activate-service-account $GCR_EMAIL --key-file <(echo "$GCR_KEY")
 fi
 
 for DIST in $DISTS; do
+    if [ -z ${PUSH_IF_CHANGED} ]; then
+        docker tag $BASENAME:$DIST $BASENAME:$DIST-save
+        if docker pull $BASENAME:$DIST; then
+            if ./dockerdiff $BASENAME:$DIST $BASENAME:$DIST-save; then
+                echo "Not pushing $DIST as it has not changed"
+                continue
+            fi
+        fi
+        docker tag $BASENAME:$DIST-save $BASENAME:$DIST
+    fi
+    docker push $BASENAME:$DIST
     gcloud docker push $GCR_BASENAME:$DIST
 done
-gcloud docker push $GCR_BASENAME:latest
-
