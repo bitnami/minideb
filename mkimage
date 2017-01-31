@@ -45,6 +45,11 @@ chroot "$rootfsDir" dpkg -l | tee "$TARGET.manifest"
 
 echo "Applying docker-specific tweaks"
 # These are copied from the docker contrib/mkimage/debootstrap script.
+# Modifications:
+#  - remove `strings` check for applying the --force-unsafe-io tweak.
+#     This was sometimes wrongly detected as not applying, and we aren't
+#     interested in building versions that this guard would apply to,
+#     so simply apply the tweak unconditionally.
 
 # get path to "chroot" in our current PATH
 chrootPath="$(type -P chroot)"
@@ -83,18 +88,15 @@ chmod +x "$rootfsDir/usr/sbin/policy-rc.d"
 # don't even have kernels installed
 rm -f "$rootfsDir/etc/apt/apt.conf.d/01autoremove-kernels"
 
-# Ubuntu 10.04 sucks... :)
-if strings "$rootfsDir/usr/bin/dpkg" | grep -q unsafe-io; then
-	# force dpkg not to call sync() after package extraction (speeding up installs)
-	echo >&2 "+ echo force-unsafe-io > '$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup'"
-	cat > "$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup" <<-'EOF'
-		# For most Docker users, package installs happen during "docker build", which
-		# doesn't survive power loss and gets restarted clean afterwards anyhow, so
-		# this minor tweak gives us a nice speedup (much nicer on spinning disks,
-		# obviously).
-		force-unsafe-io
-	EOF
-fi
+# force dpkg not to call sync() after package extraction (speeding up installs)
+echo >&2 "+ echo force-unsafe-io > '$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup'"
+cat > "$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup" <<-'EOF'
+# For most Docker users, package installs happen during "docker build", which
+# doesn't survive power loss and gets restarted clean afterwards anyhow, so
+# this minor tweak gives us a nice speedup (much nicer on spinning disks,
+# obviously).
+force-unsafe-io
+EOF
 
 if [ -d "$rootfsDir/etc/apt/apt.conf.d" ]; then
 	# _keep_ us lean by effectively running "apt-get clean" after every install
