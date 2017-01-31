@@ -192,7 +192,7 @@ chmod 0755 "$rootfsDir/usr/sbin/install_packages"
 # Capture the most recent date that a package in the image was changed.
 # We don't care about the particular date, or which package it comes from,
 # we just need a date that isn't very far in the past.
-BUILD_DATE="$(find $rootfsDir/usr/share/doc -name changelog.Debian.gz -print0 | xargs -0 -l dpkg-parsechangelog -SDate -l | xargs -l -i date --date="{}" +%s | sort -n | tail -n 1)"
+BUILD_DATE="$(find $rootfsDir/usr/share/doc -name changelog.Debian.gz -exec dpkg-parsechangelog -SDate -l'{}' \; | xargs -l -i date --date="{}" +%s | sort -n | tail -n 1)"
 echo "Trimming down"
 for DIR in $DIRS_TO_TRIM; do
   rm -r "$rootfsDir/$DIR"/*
