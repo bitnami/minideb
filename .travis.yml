@@ -5,7 +5,7 @@ services:
   - docker
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y debian-archive-keyring debootstrap
+  - sudo apt-get install -y debian-archive-keyring debootstrap devscripts
 deploy:
   provider: script
   script: bash pushall
