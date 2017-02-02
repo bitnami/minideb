@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 set -u
+set -o pipefail
 
 ROOT=$(cd $(dirname $0) && pwd)
 
@@ -40,10 +41,15 @@ fi
 chroot "$rootfsDir" apt-get update
 chroot "$rootfsDir" apt-get upgrade -y -o Dpkg::Options::="--force-confdef"
 
-chroot "rootfsDir" dpkg -l | tee "$TARGET.manifest"
+chroot "$rootfsDir" dpkg -l | tee "$TARGET.manifest"
 
 echo "Applying docker-specific tweaks"
 # These are copied from the docker contrib/mkimage/debootstrap script.
+# Modifications:
+#  - remove `strings` check for applying the --force-unsafe-io tweak.
+#     This was sometimes wrongly detected as not applying, and we aren't
+#     interested in building versions that this guard would apply to,
+#     so simply apply the tweak unconditionally.
 
 # get path to "chroot" in our current PATH
 chrootPath="$(type -P chroot)"
@@ -82,18 +88,15 @@ chmod +x "$rootfsDir/usr/sbin/policy-rc.d"
 # don't even have kernels installed
 rm -f "$rootfsDir/etc/apt/apt.conf.d/01autoremove-kernels"
 
-# Ubuntu 10.04 sucks... :)
-if strings "$rootfsDir/usr/bin/dpkg" | grep -q unsafe-io; then
-	# force dpkg not to call sync() after package extraction (speeding up installs)
-	echo >&2 "+ echo force-unsafe-io > '$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup'"
-	cat > "$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup" <<-'EOF'
-		# For most Docker users, package installs happen during "docker build", which
-		# doesn't survive power loss and gets restarted clean afterwards anyhow, so
-		# this minor tweak gives us a nice speedup (much nicer on spinning disks,
-		# obviously).
-		force-unsafe-io
-	EOF
-fi
+# force dpkg not to call sync() after package extraction (speeding up installs)
+echo >&2 "+ echo force-unsafe-io > '$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup'"
+cat > "$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup" <<-'EOF'
+# For most Docker users, package installs happen during "docker build", which
+# doesn't survive power loss and gets restarted clean afterwards anyhow, so
+# this minor tweak gives us a nice speedup (much nicer on spinning disks,
+# obviously).
+force-unsafe-io
+EOF
 
 if [ -d "$rootfsDir/etc/apt/apt.conf.d" ]; then
 	# _keep_ us lean by effectively running "apt-get clean" after every install
@@ -188,12 +191,24 @@ EOF
 chmod 0755 "$rootfsDir/usr/sbin/install_packages"
 
 
+# Capture the most recent date that a package in the image was changed.
+# We don't care about the particular date, or which package it comes from,
+# we just need a date that isn't very far in the past.
+BUILD_DATE="$(find $rootfsDir/usr/share/doc -name changelog.Debian.gz -exec dpkg-parsechangelog -SDate -l'{}' \; | xargs -l -i date --date="{}" +%s | sort -n | tail -n 1)"
 echo "Trimming down"
 for DIR in $DIRS_TO_TRIM; do
   rm -r "$rootfsDir/$DIR"/*
 done
+# Remove the aux-cache as it isn't reproducible. It doesn't seem to
+# cause any problems to remove it.
+rm "$rootfsDir/var/cache/ldconfig/aux-cache"
 find "$rootfsDir/usr/share/doc" -mindepth 1 -not -name copyright -not -type d -delete
 find "$rootfsDir/usr/share/doc" -mindepth 1 -type d -empty -delete
+# Set the mtime on all files to be no older than $BUILD_DATE.
+# This is required to have the same metadata on files so that the
+# same tarball is produced. We assume that it is not important
+# that any file have a newer mtime than this.
+find "$rootfsDir" -depth -newermt "@$BUILD_DATE" -print0 | xargs -0r touch --no-dereference --date="@$BUILD_DATE"
 echo "Total size"
 du -skh "$rootfsDir"
 echo "Package sizes"

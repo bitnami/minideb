@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Import a tarball as a docker image, specifying the desired image
+# creation date.
+
+# This is useful as there's no other way to manipulate the creation
+# date, and the date is part of the calculation of the image id.
+# This means that the only way to reproduce an image is to specify
+# the same timestamp.
+
+set -e
+set -u
+set -o pipefail
+
+CONF_TEMPLATE='{"architecture":"amd64","comment":"from Bitnami with love","config":{"Hostname":"","Domainname":"","User":"","AttachStdin":false,"AttachStdout":false,"AttachStderr":false,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Env":null,"Cmd":["/bin/bash"],"Image":"","Volumes":null,"WorkingDir":"","Entrypoint":null,"OnBuild":null,"Labels":null},"container_config":{"Hostname":"","Domainname":"","User":"","AttachStdin":false,"AttachStdout":false,"AttachStderr":false,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Env":null,"Cmd":null,"Image":"","Volumes":null,"WorkingDir":"","Entrypoint":null,"OnBuild":null,"Labels":null},"created":"%TIMESTAMP%","docker_version":"1.13.0","history":[{"created":"%TIMESTAMP%","comment":"from Bitnami with love"}],"os":"linux","rootfs":{"type":"layers","diff_ids":["sha256:%LAYERSUM%"]}}'
+MANIFEST_TEMPLATE='[{"Config":"%CONF_SHA%.json","RepoTags":null,"Layers":["%LAYERSUM%/layer.tar"]}]'
+
+SOURCE=${1:?Specify the tarball to import}
+TIMESTAMP=${2:?Specify the timestamp to use}
+
+import() {
+    local TDIR="$(mktemp -d)"
+    local LAYERSUM="$(sha256sum $SOURCE | awk '{print $1}')"
+    mkdir $TDIR/$LAYERSUM
+    cp $SOURCE $TDIR/$LAYERSUM/layer.tar
+    echo -n '1.0' > $TDIR/$LAYERSUM/VERSION
+    local CONF="$(echo -n "$CONF_TEMPLATE" | sed -e "s/%TIMESTAMP%/$TIMESTAMP/g" -e "s/%LAYERSUM%/$LAYERSUM/g")"
+    local CONF_SHA="$(echo -n "$CONF" | sha256sum | awk '{print $1}')"
+    echo -n "$CONF" > "$TDIR/${CONF_SHA}.json"
+    local MANIFEST="$(echo -n "$MANIFEST_TEMPLATE" | sed -e "s/%CONF_SHA%/$CONF_SHA/g" -e "s/%LAYERSUM%/$LAYERSUM/g")"
+    echo -n "$MANIFEST" > $TDIR/manifest.json
+    tar cf $TDIR/import.tar -C $TDIR manifest.json "${CONF_SHA}.json" "$LAYERSUM"
+    local ID=$(docker load -i $TDIR/import.tar | awk '{print $4}')
+    if [ "$ID" != "sha256:$CONF_SHA" ]; then
+        echo "Failed to load $ID correctly, expected id to be $CONF_SHA, source in $TDIR" >&2
+        exit 1
+    fi
+    rm -r "$TDIR"
+    echo $ID
+}
+
+import
