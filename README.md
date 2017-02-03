@@ -66,7 +66,7 @@ Building
 
 You can build an image yourself if you wish:
 
-- Install debootstrap and debian-archive-keyring.
+- Install debootstrap, devscripts and debian-archive-keyring.
 - sudo ./buildall
 
 To build an individual image:

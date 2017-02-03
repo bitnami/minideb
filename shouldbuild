@@ -1,0 +1,58 @@
+#!/bin/bash
+
+set -e
+set -u
+set -o pipefail
+
+IMAGE_TAG=${1:?Specify the tag of the image to check}
+DIST=${2:?Specify the distribution (jessie/etc.)}
+
+if ! docker pull $IMAGE_TAG; then
+    # Not present, so have to build it
+    exit 0
+fi
+
+TMPDIR=$(mktemp -d)
+trap "rm -r $TMPDIR" EXIT
+
+_chdist() {
+    local cmd=$1
+    shift
+    chdist -d "$TMPDIR" "$cmd" $DIST "$@"
+}
+
+set_mirrors() {
+    local mirrors="deb http://httpredir.debian.org/debian $DIST main"
+    if [ "$DIST" != "unstable" ]; then
+        mirrors="$mirrors\ndeb http://security.debian.org/ $DIST/updates main"
+    fi
+    echo $mirrors > $TMPDIR/$DIST/etc/apt/sources.list
+}
+
+_chdist create > /dev/null
+set_mirrors
+_chdist apt-get update > /dev/null
+
+get_latest() {
+    _chdist apt-cache madison $1 |  awk '{print $3}q' | head -n 1
+}
+
+get_package_versions() {
+    local image_id=$1
+    docker run --rm $image_id dpkg-query -W -f '${Package} ${Version}\n'
+}
+
+has_not_changed() {
+    while read package version; do
+      local latest="$(get_latest $package)"
+      if [ "$latest" != "$version" ]; then
+          echo "$package($version -> $latest)"
+      fi
+  done
+}
+
+CHANGED="$(get_package_versions $IMAGE_TAG | has_not_changed)"
+if [ -z "$CHANGED" ]; then
+    exit 1
+fi
+echo "Changed for $IMAGE_TAG: $CHANGED"
