@@ -34,6 +34,8 @@ work_out_debs () {
     # login as su maybe used if run as non root (?)
     # lsb-base ?
     # mawk as it is used by dpkg
+    # ncurses-base for terminfo files as docker sets TERM=xterm
+    #   see https://github.com/bitnami/minideb/issues/17
     # passwd for managing user accounts if run as non-root.
     # sed as a very commonly used tool
     # sysv-rc for update-rc.d, required when installing initscripts in postinsts
@@ -41,7 +43,7 @@ work_out_debs () {
     # tzdata for handling timezones
     # util-linux for getopt
     # mount is required for mounting /proc during debootstrap
-	required="adduser base-files base-passwd bash coreutils dash debian-archive-keyring diffutils dpkg findutils grep gzip hostname libc-bin login lsb-base mawk passwd sed sysv-rc tar tzdata util-linux mount"
+	required="adduser base-files base-passwd bash coreutils dash debian-archive-keyring diffutils dpkg findutils grep gzip hostname libc-bin login lsb-base mawk ncurses-base passwd sed sysv-rc tar tzdata util-linux mount"
 
 	base="apt"
 
