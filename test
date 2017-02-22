@@ -12,7 +12,13 @@ function desc() {
 }
 
 function test() {
-    docker run --rm -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" "$@"
+    test_extra_args '' "$@"
+}
+
+function test_extra_args() {
+    local extra_args=$1
+    shift
+    docker run --rm $extra_args -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" "$@"
     echo ""
     echo TEST: OK
     echo ""
@@ -40,3 +46,7 @@ desc "Check that install_packages doesn't loop forever on failures"
 # We check that we didn't install the package afterwards, just in case a package gets added with that name.
 # We wrap the whole thing in a timeout so that it doesn't loop forever. It's not ideal to have a timeout as there may be spurious failures if the network is slow.
 test bash -c 'timeout 60 bash -c "(install_packages thispackagebetternotexist || true) && ! dpkg -l thispackagebetternotexist"'
+
+# See https://github.com/bitnami/minideb/issues/17
+desc "Checking that the terminfo is valid when running with -t (#17)"
+echo "" | test_extra_args '-t' bash -c 'install_packages procps && top -d1 -n1 -b'
