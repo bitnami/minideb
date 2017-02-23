@@ -20,6 +20,9 @@ work_out_debs () {
     # base-files as it has many important files
     # base-passwd to get user account info
     # bash because users will often shell in
+    # bsdutils because it has some commands used in postinst
+    #  - particularly `logger` for `mysql-server` see
+    #    https://github.com/bitnami/minideb/issues/16
     # coreutils for many very common utilities
     # dash for a shell for scripts
     # debian-archive-keyring to verify apt packages
@@ -43,7 +46,7 @@ work_out_debs () {
     # tzdata for handling timezones
     # util-linux for getopt
     # mount is required for mounting /proc during debootstrap
-	required="adduser base-files base-passwd bash coreutils dash debian-archive-keyring diffutils dpkg findutils grep gzip hostname libc-bin login lsb-base mawk ncurses-base passwd sed sysv-rc tar tzdata util-linux mount"
+	required="adduser base-files base-passwd bash bsdutils coreutils dash debian-archive-keyring diffutils dpkg findutils grep gzip hostname libc-bin login lsb-base mawk ncurses-base passwd sed sysv-rc tar tzdata util-linux mount"
 
 	base="apt"
 
