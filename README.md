@@ -30,6 +30,17 @@ e.g.
 
     $ install_packages apache2 memcached
 
+The minideb container image is the base image for many Bitnami-maintained
+language runtimes including 
+[php](https://github.com/bitnami/bitnami-docker-php-fpm), 
+[nodejs](https://github.com/bitnami/bitnami-docker-node), 
+[ruby](https://github.com/bitnami/bitnami-docker-ruby) 
+and infrastructure components
+including [mariadb](https://github.com/bitnami/bitnami-docker-mariadb), 
+[redis](https://github.com/bitnami/bitnami-docker-redis), 
+[nginx](https://github.com/bitnami/bitnami-docker-nginx) and 
+[mongodb](https://github.com/bitnami/bitnami-docker-mongodb). 
+
 Compatibility
 -------------
 
