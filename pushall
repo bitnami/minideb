@@ -18,7 +18,7 @@ if [ -n "${DOCKER_PASSWORD:-}" ]; then
 fi
 
 if [ -n "${QUAY_PASSWORD:-}" ]; then
-    docker login -u $QUAY_USERNAME -p $QUAY_PASSWORD
+    docker login -u $QUAY_USERNAME -p $QUAY_PASSWORD quay.io
 fi
 
 if [ -n "${GCR_KEY:-}" ]; then
