@@ -1,6 +1,9 @@
 minideb
 =======
 
+[![Build Status](https://travis-ci.org/bitnami/minideb.svg?branch=master)](https://travis-ci.org/bitnami/minideb)
+[![Slack](http://slack.oss.bitnami.com/badge.svg)](http://slack.oss.bitnami.com)
+
 A small base image designed for use in containers. The image
 is based on glibc for wide compatibility, and has apt for
 access to a large number of packages. The image is based
