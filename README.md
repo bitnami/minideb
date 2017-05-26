@@ -5,7 +5,25 @@ minideb
 [![Slack](http://slack.oss.bitnami.com/badge.svg)](http://slack.oss.bitnami.com)
 
 # What is Minideb
-A small Debian based image designed for use in containers.
+A minimalist Debian based image built specifically to be used as a base image for containers.
+
+# Use Minideb
+You can use the image directly, e.g.
+```
+$ docker run --rm -it bitnami/minideb:latest
+```
+
+There are [tags](https://hub.docker.com/r/bitnami/minideb/tags/) for the different Debian releases.
+```
+$ docker run --rm -it bitnami/minideb:jessie
+```
+
+The images are built daily and have the security release enabled, so will contain any security updates released more than 24 hours ago.
+
+You can also use the images as a base for your own `Dockerfile`:
+```
+FROM bitnami/minideb:jessie
+```
 
 # Why use Minideb
   * This image aims to strike a good balance between having small images, and having many quality packages available for easy integration.
@@ -36,51 +54,39 @@ The minideb container image is the base image for many Bitnami-maintained langua
 # Compatibility
 The image points to the Debian archive, so you are free to install packages from there that you need. However because some `Essential` packages have been removed they may not always install or work correctly.
 
-In those cases you can figure out which package is needed and manually specify to install it along with your desired packages.
-
-# Getting this image
-You can use the image directly, e.g.
-```
-$ docker run --rm -it bitnami/minideb:latest
-```
-
-There are tags for the different Debian releases.
-```
-$ docker run --rm -it bitnami/minideb:jessie
-```
-
-The images are built daily and have the security release enabled, so will contain any security updates released more than 24 hours ago.
-
-You can also use the images as a base for your own `Dockerfile`:
-```
-FROM bitnami/minideb:jessie
-```
+In those cases you can figure out which package is needed and manually specify to install it along with your desired packages. Please feel free to submit an issue request so that we can reach out and help you quickly.
 
 # Building Minideb
 You can build an image yourself if you wish:
+```console
+### Install debootstrap and debian-archive-keyring.
+$ apt-get update && apt-get install -y debootstrap debian-archive-keyring
 
-- Install debootstrap and debian-archive-keyring.
-- sudo ./buildall
+### Build Minideb
+$ sudo ./buildall
 
-To build an individual image:
+### To build an individual image
+$ sudo ./mkimage jessie.tar jessie
 
-- sudo ./mkimage jessie.tar jessie
+### Then you can import the tar file to a docker image (ex: minideb:jessie)
+$ docker import -t minideb:jessie jessie.tar
+```
 
 To test the resulting image:
-
-- docker import -t minideb:jessie jessie.tar
-- ./test minideb:jessie
+```
+$ ./test minideb:jessie
+```
 
 # Contributing
 We'd love for you to contribute to this image. You can request new features by creating an [issue](https://github.com/bitnami/minideb/issues), or submit a [pull request](https://github.com/bitnami/minideb/pulls) with your contribution.
 
 # Community
-Most real time communication happens in the #containers channel at bitnami-oss.slack.com; you can sign up at slack.oss.bitnami.com.
+Most real time communication happens in the #containers channel at [bitnami-oss.slack.com](https://bitnami-oss.slack.com); you can sign up at [slack.oss.bitnami.com](http://slack.oss.bitnami.com).
 
-Discussions are archived at bitnami-oss.slackarchive.io.
+Discussions are archived at [bitnami-oss.slackarchive.io](https://bitnami-oss.slackarchive.io).
 
 # License
-Copyright (c) 2015-2016 Bitnami
+Copyright (c) 2016-2017 Bitnami
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
