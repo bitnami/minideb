@@ -1,23 +1,32 @@
-BIND_DIR := build
+BUILD_DIR := build
 MKDIR_P = mkdir -p
 RM = rm -rf
 
-default: build-all
+.PHONY: build clean clobber
 
-build-jessie:
-	$(MAKE) clean-up
-	${MKDIR_P} ${CURDIR}/${BIND_DIR}
-	./pre-build.sh
-	./mkimage ${CURDIR}/${BIND_DIR}/jessie.tar jessie
+all: build
 
-build-all:
-	$(MAKE) clean-up
-	./pre-build.sh
-	./buildall
+clean:
+	${RM} ${CURDIR}/${BUILD_DIR}
 
-test-jessie:
-	cat ${CURDIR}/${BIND_DIR}/jessie.tar | docker import - minideb:jessie
-	./test minideb:jessie
+clobber: clean
+	@${RM} .installed-requirements
 
-clean-up:
-	${RM} ${CURDIR}/${BIND_DIR}
+.installed-requirements:
+	@echo "Installing required packages..."
+	@./pre-build.sh
+	@touch $@
+
+build: .installed-requirements
+	@echo "Building all supported distros..."
+	@./buildall
+
+%:
+	@echo "Building $@..."
+	@$(MAKE) .installed-requirements
+	@${MKDIR_P} ${CURDIR}/${BUILD_DIR}
+	./mkimage ${CURDIR}/${BUILD_DIR}/$@.tar $@
+
+test-%:
+	@cat ${CURDIR}/${BUILD_DIR}/$*.tar | docker import - minideb:$*
+	@./test minideb:$*
