@@ -57,24 +57,19 @@ The image points to the Debian archive, so you are free to install packages from
 In those cases you can figure out which package is needed and manually specify to install it along with your desired packages. Please feel free to submit an issue request so that we can reach out and help you quickly.
 
 # Building Minideb
-You can build an image yourself if you wish:
-```console
-### Install debootstrap and debian-archive-keyring.
-$ apt-get update && apt-get install -y debootstrap debian-archive-keyring
+We provide a Makefile to help you build Minideb locally. It should be run on a Debian based machine and requires sudo privileged.
+```
+$ sudo make
+```
 
-### Build Minideb
-$ sudo ./buildall
-
-### To build an individual image
-$ sudo ./mkimage jessie.tar jessie
-
-### Then you can import the tar file to a docker image (ex: minideb:jessie)
-$ docker import -t minideb:jessie jessie.tar
+To build an individual Minideb
+```
+$ sudo make build-jessie
 ```
 
 To test the resulting image:
 ```
-$ ./test minideb:jessie
+$ sudo make test-jessie
 ```
 
 # Contributing
