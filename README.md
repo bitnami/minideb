@@ -5,7 +5,7 @@ minideb
 [![Slack](http://slack.oss.bitnami.com/badge.svg)](http://slack.oss.bitnami.com)
 
 # What is Minideb
-A minimalist Debian based image built specifically to be used as a base image for containers.
+A minimalist Debian-based image built specifically to be used as a base image for containers.
 
 # Use Minideb
 You can use the image directly, e.g.
@@ -27,7 +27,7 @@ FROM bitnami/minideb:jessie
 
 # Why use Minideb
   * This image aims to strike a good balance between having small images, and having many quality packages available for easy integration.
-  * The image is based on glibc for wide compatibility, and has apt for access to a large number of packages. In order to reduce size of the image, some packages that aren't required in containers are removed:
+  * The image is based on glibc for wide compatibility, and has apt for access to a large number of packages. In order to reduce size of the image, some things that aren't required in containers are removed:
     * Packages that aren't often used in containers (hardware related, init systems etc.)
     * Some files that aren't usually required (docs, man pages, locales, caches)
   * These images also include an `install_packages` command that you can use instead of apt. This takes care of some things for you:
@@ -41,15 +41,7 @@ FROM bitnami/minideb:jessie
     ```
 
 # Adoption of Minideb
-The minideb container image is the base image for many Bitnami-maintained language runtimes including
-  [php](https://github.com/bitnami/bitnami-docker-php-fpm),
-  [nodejs](https://github.com/bitnami/bitnami-docker-node),
-  [ruby](https://github.com/bitnami/bitnami-docker-ruby)
-  and infrastructure components
-  including [mariadb](https://github.com/bitnami/bitnami-docker-mariadb),
-  [redis](https://github.com/bitnami/bitnami-docker-redis),
-  [nginx](https://github.com/bitnami/bitnami-docker-nginx) and
-  [mongodb](https://github.com/bitnami/bitnami-docker-mongodb).
+The minideb container image is the base image for many Bitnami-maintained language runtimes including [php](https://github.com/bitnami/bitnami-docker-php-fpm), [nodejs](https://github.com/bitnami/bitnami-docker-node), [ruby](https://github.com/bitnami/bitnami-docker-ruby) and infrastructure components including [mariadb](https://github.com/bitnami/bitnami-docker-mariadb), [redis](https://github.com/bitnami/bitnami-docker-redis), [nginx](https://github.com/bitnami/bitnami-docker-nginx) and [mongodb](https://github.com/bitnami/bitnami-docker-mongodb).
 
 # Compatibility
 The image points to the Debian archive, so you are free to install packages from there that you need. However because some `Essential` packages have been removed they may not always install or work correctly.
@@ -57,14 +49,14 @@ The image points to the Debian archive, so you are free to install packages from
 In those cases you can figure out which package is needed and manually specify to install it along with your desired packages. Please feel free to submit an issue request so that we can reach out and help you quickly.
 
 # Building Minideb
-We provide a Makefile to help you build Minideb locally. It should be run on a Debian based machine and requires sudo privileged.
+We provide a Makefile to help you build Minideb locally. It should be run on a Debian based machine and requires sudo privileges.
 ```
 $ sudo make
 ```
 
-To build an individual Minideb
+To build an individual release (jessie, wheezy or squeeze)
 ```
-$ sudo make build-jessie
+$ sudo make jessie
 ```
 
 To test the resulting image:
