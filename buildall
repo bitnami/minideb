@@ -34,9 +34,10 @@ set -u
 set -o pipefail
 
 DISTS="jessie
+stretch
 unstable
 "
-LATEST=jessie
+LATEST=stretch
 
 BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb

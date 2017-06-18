@@ -15,14 +15,14 @@ $ docker run --rm -it bitnami/minideb:latest
 
 There are [tags](https://hub.docker.com/r/bitnami/minideb/tags/) for the different Debian releases.
 ```
-$ docker run --rm -it bitnami/minideb:jessie
+$ docker run --rm -it bitnami/minideb:stretch
 ```
 
 The images are built daily and have the security release enabled, so will contain any security updates released more than 24 hours ago.
 
 You can also use the images as a base for your own `Dockerfile`:
 ```
-FROM bitnami/minideb:jessie
+FROM bitnami/minideb:stretch
 ```
 
 # Why use Minideb
@@ -54,14 +54,14 @@ We provide a Makefile to help you build Minideb locally. It should be run on a D
 $ sudo make
 ```
 
-To build an individual release (jessie, wheezy or squeeze)
+To build an individual release (stretch, jessie or unstable)
 ```
-$ sudo make jessie
+$ sudo make stretch
 ```
 
 To test the resulting image:
 ```
-$ sudo make test-jessie
+$ sudo make test-stretch
 ```
 
 # Contributing
