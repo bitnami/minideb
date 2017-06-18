@@ -5,6 +5,7 @@ set -u
 set -o pipefail
 
 DISTS="jessie
+stretch
 unstable
 latest
 "
