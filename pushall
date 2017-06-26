@@ -29,5 +29,5 @@ fi
 for DIST in $DISTS; do
     docker push $BASENAME:$DIST
     docker push $QUAY_BASENAME:$DIST
-    gcloud docker push $GCR_BASENAME:$DIST
+    gcloud docker -- push $GCR_BASENAME:$DIST
 done
