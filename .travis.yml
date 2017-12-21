@@ -1,7 +1,7 @@
 language: bash
 sudo: required
 script: sudo bash buildall
-dist: trusty
+dist: xenial
 services:
   - docker
 before_install:
