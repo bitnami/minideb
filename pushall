@@ -14,20 +14,30 @@ BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb
 QUAY_BASENAME=quay.io/bitnami/minideb
 
+
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
-    docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
 fi
 
 if [ -n "${QUAY_PASSWORD:-}" ]; then
-    docker login -u $QUAY_USERNAME -p $QUAY_PASSWORD quay.io
+    docker login -u "$QUAY_USERNAME" -p "$QUAY_PASSWORD" quay.io
 fi
 
 if [ -n "${GCR_KEY:-}" ]; then
-    gcloud auth activate-service-account $GCR_EMAIL --key-file <(echo "$GCR_KEY")
+    gcloud auth activate-service-account "$GCR_EMAIL" --key-file <(echo "$GCR_KEY")
 fi
 
 for DIST in $DISTS; do
-    docker push $BASENAME:$DIST
-    docker push $QUAY_BASENAME:$DIST
-    gcloud docker -- push $GCR_BASENAME:$DIST
+    docker push "${BASENAME}:${DIST}"
+    docker push "${QUAY_BASENAME}:${DIST}"
+    gcloud docker -- push "${GCR_BASENAME}:${DIST}"
+done
+
+# Create and merge a PR to update minideb-extras
+CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
+source <(curl -sSL $CIRCLE_CI_FUNCTIONS_URL)
+for DIST in $DISTS; do
+    DIST_BUILD_ID=$(docker image inspect --format '{{.Id}}' ${BASENAME}:${DIST})
+    update_minideb_derived "https://github.com/bitnami/minideb-extras" $DIST $DIST_BUILD_ID
+    update_minideb_derived "https://github.com/bitnami/minideb-runtimes" $DIST $DIST_BUILD_ID
 done
