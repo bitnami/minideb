@@ -9,11 +9,9 @@ stretch
 unstable
 latest
 "
-
 BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb
 QUAY_BASENAME=quay.io/bitnami/minideb
-
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
