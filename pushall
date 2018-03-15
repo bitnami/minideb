@@ -35,7 +35,8 @@ done
 CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
 source <(curl -sSL $CIRCLE_CI_FUNCTIONS_URL)
 for DIST in $DISTS; do
-    DIST_BUILD_ID=$(docker image inspect --format '{{.Id}}' ${BASENAME}:${DIST})
-    update_minideb_derived "https://github.com/bitnami/minideb-extras" $DIST $DIST_BUILD_ID
-    update_minideb_derived "https://github.com/bitnami/minideb-runtimes" $DIST $DIST_BUILD_ID
+    # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
+    DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' ${BASENAME}:${DIST})
+    update_minideb_derived "https://github.com/bitnami/minideb-extras" $DIST $DIST_REPO_DIGEST
+    update_minideb_derived "https://github.com/bitnami/minideb-runtimes" $DIST $DIST_REPO_DIGEST
 done
