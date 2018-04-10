@@ -2,7 +2,6 @@ minideb
 =======
 
 [![Build Status](https://travis-ci.org/bitnami/minideb.svg?branch=master)](https://travis-ci.org/bitnami/minideb)
-[![Slack](http://slack.oss.bitnami.com/badge.svg)](http://slack.oss.bitnami.com)
 
 # What is Minideb
 A minimalist Debian-based image built specifically to be used as a base image for containers.
