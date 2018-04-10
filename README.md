@@ -66,11 +66,6 @@ $ sudo make test-stretch
 # Contributing
 We'd love for you to contribute to this image. You can request new features by creating an [issue](https://github.com/bitnami/minideb/issues), or submit a [pull request](https://github.com/bitnami/minideb/pulls) with your contribution.
 
-# Community
-Most real time communication happens in the #containers channel at [bitnami-oss.slack.com](https://bitnami-oss.slack.com); you can sign up at [slack.oss.bitnami.com](http://slack.oss.bitnami.com).
-
-Discussions are archived at [bitnami-oss.slackarchive.io](https://bitnami-oss.slackarchive.io).
-
 # License
 Copyright (c) 2016-2017 Bitnami
 
