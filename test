@@ -45,7 +45,7 @@ desc "Check that install_packages doesn't loop forever on failures"
 # This won't install and will fail. The key is that the retry loop will stop after a few iterations.
 # We check that we didn't install the package afterwards, just in case a package gets added with that name.
 # We wrap the whole thing in a timeout so that it doesn't loop forever. It's not ideal to have a timeout as there may be spurious failures if the network is slow.
-test bash -c 'timeout 180 bash -c "(install_packages thispackagebetternotexist || true) && ! dpkg -l thispackagebetternotexist"'
+test bash -c 'timeout 360 bash -c "(install_packages thispackagebetternotexist || true) && ! dpkg -l thispackagebetternotexist"'
 
 # See https://github.com/bitnami/minideb/issues/17
 desc "Checking that the terminfo is valid when running with -t (#17)"
