@@ -5,6 +5,7 @@ dist: xenial
 services:
   - docker
 before_install:
+  - docker version
   # Fix for Ubuntu Xenial apt-daily.service triggering
   # https://unix.stackexchange.com/questions/315502/how-to-disable-apt-daily-service-on-ubuntu-cloud-vm-image
   - |
