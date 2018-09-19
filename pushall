@@ -26,6 +26,7 @@ if [ -n "${GCR_KEY:-}" ]; then
 fi
 
 if [ -n "${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE:-}" -a -n "${DOCKER_CONTENT_TRUST_REPOSITORY_KEY:-}" ]; then
+    tmpdir=$(mktemp -d)
     bash -c 'echo -n "${DOCKER_CONTENT_TRUST_REPOSITORY_KEY}" > "${tmpdir}/key"'
     docker trust key load "${tmpdir}/key"
     rm -rf "${tmpdir}"
