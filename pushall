@@ -25,6 +25,14 @@ if [ -n "${GCR_KEY:-}" ]; then
     gcloud auth activate-service-account "$GCR_EMAIL" --key-file <(echo "$GCR_KEY")
 fi
 
+if [ -n "${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE:-}" -a -n "${DOCKER_CONTENT_TRUST_REPOSITORY_KEY:-}" ]; then
+    tmpdir=$(mktemp -d)
+    bash -c 'echo -n "${DOCKER_CONTENT_TRUST_REPOSITORY_KEY}" > "${tmpdir}/key"'
+    docker trust key load "${tmpdir}/key"
+    rm -rf "${tmpdir}"
+    export DOCKER_CONTENT_TRUST=1    
+fi
+
 for DIST in $DISTS; do
     docker push "${BASENAME}:${DIST}"
     docker push "${QUAY_BASENAME}:${DIST}"
