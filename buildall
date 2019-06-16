@@ -35,6 +35,7 @@ set -o pipefail
 
 DISTS="jessie
 stretch
+buster
 unstable
 "
 LATEST=stretch
