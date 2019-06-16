@@ -35,6 +35,7 @@ set -o pipefail
 
 DISTS="jessie
 stretch
+buster
 unstable
 "
 LATEST=stretch
@@ -67,7 +68,7 @@ for DIST in $DISTS; do
    log "============================================"
    log "Running tests for $BASENAME:$DIST"
    log "============================================"
-   ./test $built_image_id
+   ./test $built_image_id $DIST
    log "============================================"
    log "Rebuilding $BASENAME:$DIST to test reproducibility"
    log "============================================"

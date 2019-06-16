@@ -3,6 +3,7 @@
 set -eu
 
 IMAGE_ID=$1
+DIST=$2
 
 function desc() {
     echo "================================"
@@ -51,6 +52,11 @@ test bash -c 'timeout 360 bash -c "(install_packages thispackagebetternotexist |
 desc "Checking that the terminfo is valid when running with -t (#17)"
 echo "" | test_extra_args '-t' bash -c 'install_packages procps && top -d1 -n1 -b'
 
+MYSQL_PACKAGE=default-mysql-server
+if [ "jessie" == "$DIST" ]; then
+    MYSQL_PACKAGE=mysql-server
+fi
+
 # See https://github.com/bitnami/minideb/issues/16
 desc "Check that we can install mysql-server (#16)"
-test install_packages mysql-server
+test install_packages $MYSQL_PACKAGE
