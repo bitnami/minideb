@@ -38,7 +38,7 @@ stretch
 buster
 unstable
 "
-LATEST=stretch
+LATEST=buster
 
 BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb
