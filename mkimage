@@ -40,7 +40,7 @@ echo "Building base in $rootfsDir"
 DEBOOTSTRAP_DIR=$DEBOOTSTRAP_DIR debootstrap --keyring $KEYRING --variant container --foreign ${DIST} "$rootfsDir"
 chroot "$rootfsDir" bash debootstrap/debootstrap --second-stage
 
-echo -e "deb http://httpredir.debian.org/debian $DIST main" > "$rootfsDir/etc/apt/sources.list"
+echo -e "deb http://deb.debian.org/debian $DIST main" > "$rootfsDir/etc/apt/sources.list"
 if [ "$DIST" != "unstable" ]; then
     echo "deb http://security.debian.org/ $DIST/updates main" >> "$rootfsDir/etc/apt/sources.list"
 fi
