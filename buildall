@@ -77,13 +77,16 @@ for DIST in $DISTS; do
    if [ "$repro_image_id" != "$built_image_id" ]; then
        log "$BASENAME:$DIST differs after a rebuild. Examine $built_image_id and $repro_image_id"
        log "to find the differences and fix the build to be reproducible again."
-       log "Running \`./dockerdiff $built_image_id $repro_image_id\` might be useful."
+       log "Changes (- first build, + second build):"
+       ./dockerdiff $built_image_id $repro_image_id || true
        exit 1
    fi
    rm build/${DIST}-repro.tar
    if [ -n "$pulled_image_id" ]; then
        if [ "$built_image_id" != "$pulled_image_id" ]; then
            log "Image changed $built_image_id (new) != $pulled_image_id (old)"
+           log "Changes (- old, + new):"
+           ./dockerdiff $pulled_image_id $built_image_id || true
            # Re-import with the current timestamp so that the image shows
            # as new
            built_image_id="$(./import build/$DIST.tar "$current_ts")"
