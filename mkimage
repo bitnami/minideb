@@ -197,6 +197,11 @@ rm -r /var/lib/apt/lists /var/cache/apt/archives
 EOF
 chmod 0755 "$rootfsDir/usr/sbin/install_packages"
 
+# Set the password change date to a fixed date, otherwise it defaults to the current
+# date, so we get a different image every day. SOURCE_DATE_EPOCH is designed to do this, but
+# was only implemented recently, so we can't rely on it for all versions we want to build
+# We also have to copy over the backup at /etc/shadow- so that it doesn't change
+chroot "$rootfsDir" getent passwd | cut -d: -f1 | xargs -n 1 chroot "$rootfsDir" chage -d 17885 && cp "$rootfsDir/etc/shadow" "$rootfsDir/etc/shadow-"
 
 # Capture the most recent date that a package in the image was changed.
 # We don't care about the particular date, or which package it comes from,
