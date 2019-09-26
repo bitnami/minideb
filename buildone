@@ -1,0 +1,110 @@
+#!/bin/bash
+#
+# Build a minideb image
+#
+# First we build the image as a tarball, then we import it and tag it.
+#
+# However we aim to allow our images to be reproduced. That means
+# we need more control over the import process. We also build and import
+# each image twice to confirm that our images are still reproducible.
+#
+# To reproduce an image you have to:
+#
+#   - Produce exactly the same base tarball. `mkimage` will take care of that
+#     for the same package inputs.
+#   - Import the image with the same config (`CMD` etc.)
+#   - Have the same creation date on the image.
+#
+# That last requirement leads us to some extra work to re-use timestamps.
+#
+# The steps are:
+#
+# 1. Pull image from Dockerhub and save creation date and image_id
+# 2. Build image locally and import it, setting creation date to the pulled one
+# 3. Build the image again and import it, also setting creation date to the pulled one
+# 4. Compare the built image ids. Error if they are not the same (Docker thinks images are different, thanks to checksum)
+# 5. Compare built image id with pulled image id. Both will have same creation date but may differ in checksum so ids may be different
+#    - If the image is the same as the pulled one then nothing changed in this build
+#    - If the image differs from the pulled one then:
+#      - Re-import the locally built image with the current timestamp so it will be shown as a new image
+#      - Tag the built image with the target tag, ready to push.
+
+set -e
+set -u
+set -o pipefail
+
+BASENAME=bitnami/minideb
+GCR_BASENAME=gcr.io/bitnami-containers/minideb
+QUAY_BASENAME=quay.io/bitnami/minideb
+
+LATEST=buster
+
+mkdir -p build
+
+log() {
+    echo "$@" >&2
+}
+
+build() {
+    DIST=$1
+    [ -f debootstrap/$DIST ] || (echo "buildall: Unknown distribution: $DIST" && exit 1)
+    current_ts="$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"
+    if docker pull $BASENAME:$DIST > /dev/null; then
+        target_ts="$(docker inspect $BASENAME:$DIST | jq --raw-output ".[0].Created")"
+        pulled_image_id="$(docker inspect $BASENAME:$DIST | jq --raw-output ".[0].Id")"
+    else
+        target_ts="$current_ts"
+        pulled_image_id=
+    fi
+    log "============================================"
+    log "Building $BASENAME:$DIST"
+    log "============================================"
+    ./mkimage build/$DIST.tar $DIST
+    built_image_id=$(./import build/$DIST.tar "$target_ts")
+    log "============================================"
+    log "Running tests for $BASENAME:$DIST"
+    log "============================================"
+    ./test $built_image_id $DIST
+    log "============================================"
+    log "Rebuilding $BASENAME:$DIST to test reproducibility"
+    log "============================================"
+    ./mkimage build/${DIST}-repro.tar $DIST
+    repro_image_id=$(./import build/${DIST}-repro.tar "$target_ts")
+    if [ "$repro_image_id" != "$built_image_id" ]; then
+        log "$BASENAME:$DIST differs after a rebuild. Examine $built_image_id and $repro_image_id"
+        log "to find the differences and fix the build to be reproducible again."
+        log "Changes (- first build, + second build):"
+        ./dockerdiff $built_image_id $repro_image_id || true
+        exit 1
+    fi
+    rm build/${DIST}-repro.tar
+    if [ -n "$pulled_image_id" ]; then
+        if [ "$built_image_id" != "$pulled_image_id" ]; then
+            log "Image changed $built_image_id (new) != $pulled_image_id (old)"
+            log "Changes (- old, + new):"
+            ./dockerdiff $pulled_image_id $built_image_id || true
+            # Re-import with the current timestamp so that the image shows
+            # as new
+            built_image_id="$(./import build/$DIST.tar "$current_ts")"
+        else
+            log "Image didn't change"
+            continue
+        fi
+    fi
+    docker tag $built_image_id $BASENAME:$DIST
+    docker tag $built_image_id $QUAY_BASENAME:$DIST
+    docker tag $built_image_id $GCR_BASENAME:$DIST
+    log "Tagged $built_image_id as $BASENAME:$DIST $QUAY_BASENAME:$DIST $GCR_BASENAME:$DIST"
+    if [ "$DIST" == "$LATEST" ]; then
+        docker tag $BASENAME:$DIST $BASENAME:latest
+        docker tag $QUAY_BASENAME:$DIST $QUAY_BASENAME:latest
+        docker tag $GCR_BASENAME:$DIST $GCR_BASENAME:latest
+    fi
+}
+
+if [ -z "$1" ]; then
+    echo "You must specify the dist to build"
+    exit 1
+fi
+
+build $1
