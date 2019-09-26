@@ -60,3 +60,14 @@ fi
 # See https://github.com/bitnami/minideb/issues/16
 desc "Check that we can install mysql-server (#16)"
 test install_packages $MYSQL_PACKAGE
+
+function shadow_check() {
+    local path=$1
+    test bash -c "(! cut -d: -f3 < $path | grep -v 17885 >/dev/null) || (cat $path && false)"
+}
+
+desc "Check that all users have a fixed day as the last password change date in /etc/shadow"
+shadow_check /etc/shadow
+
+desc "Check that all users have a fixed day as the last password change date in /etc/shadow-"
+shadow_check /etc/shadow-
