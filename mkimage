@@ -203,10 +203,17 @@ chmod 0755 "$rootfsDir/usr/sbin/install_packages"
 # We also have to copy over the backup at /etc/shadow- so that it doesn't change
 chroot "$rootfsDir" getent passwd | cut -d: -f1 | xargs -n 1 chroot "$rootfsDir" chage -d 17885 && cp "$rootfsDir/etc/shadow" "$rootfsDir/etc/shadow-"
 
+# Clean /etc/hostname and /etc/resolv.conf as they are based on the current env, so make
+# the chroot different. Docker doesn't care about them, as it fills them when starting
+# a container
+echo "" > "$rootfsDir/etc/resolv.conf"
+echo "host" > "$rootfsDir/etc/hostname"
+
 # Capture the most recent date that a package in the image was changed.
 # We don't care about the particular date, or which package it comes from,
 # we just need a date that isn't very far in the past.
 BUILD_DATE="$(find $rootfsDir/usr/share/doc -name changelog.Debian.gz -exec dpkg-parsechangelog -SDate -l'{}' \; | xargs -l -i date --date="{}" +%s | sort -n | tail -n 1)"
+
 echo "Trimming down"
 for DIR in $DIRS_TO_TRIM; do
   rm -r "$rootfsDir/$DIR"/*
