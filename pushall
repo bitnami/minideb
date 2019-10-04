@@ -38,6 +38,8 @@ fi
 
 for DIST in $DISTS; do
     DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${DIST}"
+    docker tag "${BASENAME}:${DIST}" "${QUAY_BASENAME}:${DIST}"
+    docker tag "${BASENAME}:${DIST}" "${GCR_BASENAME}:${DIST}"
     docker push "${QUAY_BASENAME}:${DIST}"
     gcloud docker -- push "${GCR_BASENAME}:${DIST}"
 done
