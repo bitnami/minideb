@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+SCRIPTS=(shellcheck mkimage buildone buildall pushall)
+
+shellcheck -s bash "${SCRIPTS[@]}"
