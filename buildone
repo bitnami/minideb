@@ -88,7 +88,7 @@ build() {
             built_image_id="$(./import build/$DIST.tar "$current_ts")"
         else
             log "Image didn't change"
-            continue
+            return
         fi
     fi
     docker tag $built_image_id $BASENAME:$DIST
