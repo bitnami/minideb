@@ -34,8 +34,6 @@ set -u
 set -o pipefail
 
 BASENAME=bitnami/minideb
-GCR_BASENAME=gcr.io/bitnami-containers/minideb
-QUAY_BASENAME=quay.io/bitnami/minideb
 
 LATEST=buster
 
@@ -92,13 +90,9 @@ build() {
         fi
     fi
     docker tag "$built_image_id" "$BASENAME:$DIST"
-    docker tag "$built_image_id" "$QUAY_BASENAME:$DIST"
-    docker tag "$built_image_id" "$GCR_BASENAME:$DIST"
-    log "Tagged $built_image_id as $BASENAME:$DIST $QUAY_BASENAME:$DIST $GCR_BASENAME:$DIST"
+    log "Tagged $built_image_id as $BASENAME:$DIST"
     if [ "$DIST" == "$LATEST" ]; then
         docker tag "$BASENAME:$DIST" "$BASENAME:latest"
-        docker tag "$QUAY_BASENAME:$DIST" "$QUAY_BASENAME:latest"
-        docker tag "$GCR_BASENAME:$DIST" "$GCR_BASENAME:latest"
     fi
 }
 
