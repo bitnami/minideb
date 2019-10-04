@@ -27,7 +27,7 @@ if [ -n "${GCR_KEY:-}" ]; then
 fi
 
 ENABLE_DOCKER_CONTENT_TRUST=0
-if [ -n "${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE:-}" -a -n "${DOCKER_CONTENT_TRUST_REPOSITORY_KEY:-}" ]; then
+if [ -n "${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE:-}" ] && [ -n "${DOCKER_CONTENT_TRUST_REPOSITORY_KEY:-}" ]; then
     tmpdir=$(mktemp -d)
     (cd "${tmpdir}" && bash -c 'echo -n "${DOCKER_CONTENT_TRUST_REPOSITORY_KEY}" | base64 -d > key')
     chmod 400 "${tmpdir}/key"
@@ -44,11 +44,13 @@ done
 
 # Create and merge a PR to update minideb-extras
 CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
-source <(curl -sSL $CIRCLE_CI_FUNCTIONS_URL)
+# sc can't follow source as it is a remote file
+# shellcheck disable=SC1090
+source <(curl -sSL "$CIRCLE_CI_FUNCTIONS_URL")
 for DIST in $DISTS; do
     # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
-    DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' ${BASENAME}:${DIST})
-    update_minideb_derived "https://github.com/bitnami/minideb-extras" $DIST $DIST_REPO_DIGEST
-    update_minideb_derived "https://github.com/bitnami/minideb-extras-base" $DIST $DIST_REPO_DIGEST
-    update_minideb_derived "https://github.com/bitnami/minideb-runtimes" $DIST $DIST_REPO_DIGEST
+    DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "${BASENAME}:${DIST}")
+    update_minideb_derived "https://github.com/bitnami/minideb-extras" "$DIST" "$DIST_REPO_DIGEST"
+    update_minideb_derived "https://github.com/bitnami/minideb-extras-base" "$DIST" "$DIST_REPO_DIGEST"
+    update_minideb_derived "https://github.com/bitnami/minideb-runtimes" "$DIST" "$DIST_REPO_DIGEST"
 done

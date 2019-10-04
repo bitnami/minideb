@@ -3,26 +3,26 @@ set -e
 set -u
 set -o pipefail
 
-ROOT=$(cd $(dirname $0) && pwd)
+ROOT=$(cd "$(dirname "$0")" && pwd)
 
 TARGET=${1:?Specify the target filename}
 DIST=${2:-stable}
 
 LOGFILE=${TARGET}.log
 
->$LOGFILE
-exec >  >(tee -ia $LOGFILE)
-exec 2> >(tee -ia $LOGFILE >&2)
+:>"$LOGFILE"
+exec >  >(tee -ia "$LOGFILE")
+exec 2> >(tee -ia "$LOGFILE" >&2)
 
 DEBOOTSTRAP_DIR=$(mktemp -d)
-cp -a /usr/share/debootstrap/* $DEBOOTSTRAP_DIR
-cp -a /usr/share/keyrings/debian-archive-keyring.gpg $DEBOOTSTRAP_DIR
-cp -a $ROOT/debootstrap/* $DEBOOTSTRAP_DIR/scripts
+cp -a /usr/share/debootstrap/* "$DEBOOTSTRAP_DIR"
+cp -a /usr/share/keyrings/debian-archive-keyring.gpg "$DEBOOTSTRAP_DIR"
+cp -a "${ROOT}/debootstrap/"* "${DEBOOTSTRAP_DIR}/scripts"
 
 KEYRING=$DEBOOTSTRAP_DIR/debian-archive-keyring.gpg
 
-if [ -f $ROOT/keys/$DIST.gpg ]; then
-    gpg --no-default-keyring --keyring $KEYRING --import $ROOT/keys/$DIST.gpg
+if [ -f "${ROOT}/keys/${DIST}.gpg" ]; then
+    gpg --no-default-keyring --keyring "$KEYRING" --import "${ROOT}/keys/${DIST}.gpg"
 fi
 
 export DEBIAN_FRONTEND=noninteractive
@@ -37,7 +37,7 @@ DIRS_TO_TRIM="/usr/share/man
 
 rootfsDir=$(mktemp -d)
 echo "Building base in $rootfsDir"
-DEBOOTSTRAP_DIR=$DEBOOTSTRAP_DIR debootstrap --keyring $KEYRING --variant container --foreign ${DIST} "$rootfsDir"
+DEBOOTSTRAP_DIR="$DEBOOTSTRAP_DIR" debootstrap --keyring "$KEYRING" --variant container --foreign "${DIST}" "$rootfsDir"
 chroot "$rootfsDir" bash debootstrap/debootstrap --second-stage
 
 echo -e "deb http://deb.debian.org/debian $DIST main" > "$rootfsDir/etc/apt/sources.list"
@@ -212,11 +212,11 @@ echo "host" > "$rootfsDir/etc/hostname"
 # Capture the most recent date that a package in the image was changed.
 # We don't care about the particular date, or which package it comes from,
 # we just need a date that isn't very far in the past.
-BUILD_DATE="$(find $rootfsDir/usr/share/doc -name changelog.Debian.gz -exec dpkg-parsechangelog -SDate -l'{}' \; | xargs -l -i date --date="{}" +%s | sort -n | tail -n 1)"
+BUILD_DATE="$(find "$rootfsDir/usr/share/doc" -name changelog.Debian.gz -print0 | xargs -0 -n1 -I{} dpkg-parsechangelog -SDate -l'{}' | xargs -l -i date --date="{}" +%s | sort -n | tail -n 1)"
 
 echo "Trimming down"
 for DIR in $DIRS_TO_TRIM; do
-  rm -r "$rootfsDir/$DIR"/*
+  rm -r "${rootfsDir:?rootfsDir cannot be empty}/$DIR"/*
 done
 # Remove the aux-cache as it isn't reproducible. It doesn't seem to
 # cause any problems to remove it.
@@ -231,6 +231,8 @@ find "$rootfsDir" -depth -newermt "@$BUILD_DATE" -print0 | xargs -0r touch --no-
 echo "Total size"
 du -skh "$rootfsDir"
 echo "Package sizes"
+# these aren't shell variables, this is a template, so override sc thinking these are the wrong type of quotes
+# shellcheck disable=SC2016
 chroot "$rootfsDir" dpkg-query -W -f '${Package} ${Installed-Size}\n'
 echo "Largest dirs"
 du "$rootfsDir" | sort -n | tail -n 20

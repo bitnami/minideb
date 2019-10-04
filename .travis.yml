@@ -1,6 +1,6 @@
 language: bash
 sudo: required
-script: sudo bash buildall
+script: bash shellcheck && sudo bash buildall
 dist: xenial
 services:
   - docker
@@ -13,7 +13,7 @@ before_install:
       sleep 1
     done
   - sudo apt-get -qq update
-  - sudo apt-get install -y debian-archive-keyring debootstrap
+  - sudo apt-get install -y debian-archive-keyring debootstrap shellcheck
 deploy:
   provider: script
   script: bash pushall
