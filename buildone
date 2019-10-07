@@ -35,8 +35,6 @@ set -o pipefail
 
 BASENAME=bitnami/minideb
 
-LATEST=buster
-
 mkdir -p build
 
 log() {
@@ -91,9 +89,6 @@ build() {
     fi
     docker tag "$built_image_id" "$BASENAME:$DIST"
     log "Tagged $built_image_id as $BASENAME:$DIST"
-    if [ "$DIST" == "$LATEST" ]; then
-        docker tag "$BASENAME:$DIST" "$BASENAME:latest"
-    fi
 }
 
 if [ -z "$1" ]; then

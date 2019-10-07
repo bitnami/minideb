@@ -8,8 +8,8 @@ DISTS="jessie
 stretch
 buster
 unstable
-latest
 "
+LATEST=buster
 BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb
 QUAY_BASENAME=quay.io/bitnami/minideb
@@ -36,13 +36,24 @@ if [ -n "${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE:-}" ] && [ -n "${DOCKER_CO
     export ENABLE_DOCKER_CONTENT_TRUST=1
 fi
 
+push() {
+    local dist="$1"
+    DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${dist}"
+    docker push "${QUAY_BASENAME}:${dist}"
+    gcloud docker -- push "${GCR_BASENAME}:${dist}"
+}
+
 for DIST in $DISTS; do
-    DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${DIST}"
     docker tag "${BASENAME}:${DIST}" "${QUAY_BASENAME}:${DIST}"
     docker tag "${BASENAME}:${DIST}" "${GCR_BASENAME}:${DIST}"
-    docker push "${QUAY_BASENAME}:${DIST}"
-    gcloud docker -- push "${GCR_BASENAME}:${DIST}"
+    push "$DIST"
 done
+
+docker tag "${BASENAME}:${LATEST}" "${BASENAME}:latest"
+docker tag "${QUAY_BASENAME}:${LATEST}" "${QUAY_BASENAME}:latest"
+docker tag "${GCR_BASENAME}:${LATEST}" "${GCR_BASENAME}:latest"
+
+push latest
 
 # Create and merge a PR to update minideb-extras
 CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
