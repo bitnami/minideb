@@ -221,7 +221,12 @@ done
 # Remove the aux-cache as it isn't reproducible. It doesn't seem to
 # cause any problems to remove it.
 rm "$rootfsDir/var/cache/ldconfig/aux-cache"
-find "$rootfsDir/usr/share/doc" -mindepth 1 -not -name copyright -not -type d -delete
+# Remove /usr/share/doc, but leave copyright files to be sure that we
+# comply with all licenses.
+# `mindepth 2` as we only want to remove files within the per-package
+# directories. Crucially some packages use a symlink to another package
+# dir (e.g. libgcc1), and we don't want to remove those.
+find "$rootfsDir/usr/share/doc" -mindepth 2 -not -name copyright -not -type d -delete
 find "$rootfsDir/usr/share/doc" -mindepth 1 -type d -empty -delete
 # Set the mtime on all files to be no older than $BUILD_DATE.
 # This is required to have the same metadata on files so that the
