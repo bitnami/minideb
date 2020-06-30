@@ -9,6 +9,7 @@ set -o pipefail
 DISTS="jessie
 stretch
 buster
+buster-snapshot
 unstable
 "
 

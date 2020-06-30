@@ -7,12 +7,22 @@ set -o pipefail
 DISTS="jessie
 stretch
 buster
+buster-snapshot
 unstable
 "
 LATEST=buster
 BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb
 QUAY_BASENAME=quay.io/bitnami/minideb
+
+is_snapshot() {
+    local -r dist_snapshot_regex="^(jessie|stretch|buster|unstable)-snapshot"
+    if [[ $1 =~ $dist_snapshot_regex ]]; then
+        true
+    else
+        false
+    fi
+}
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
@@ -44,9 +54,16 @@ push() {
 }
 
 for DIST in $DISTS; do
-    docker tag "${BASENAME}:${DIST}" "${QUAY_BASENAME}:${DIST}"
-    docker tag "${BASENAME}:${DIST}" "${GCR_BASENAME}:${DIST}"
-    push "$DIST"
+    if is_snapshot "$DIST"; then
+        ! debian_snapshot_id=$(cat build/snapshot_id) && continue
+        TAG="${DIST}-${debian_snapshot_id}"
+    else
+        TAG=$DIST
+    fi
+
+    docker tag "${BASENAME}:${TAG}" "${QUAY_BASENAME}:${TAG}"
+    docker tag "${BASENAME}:${TAG}" "${GCR_BASENAME}:${TAG}"
+    push "$TAG"
 done
 
 docker tag "${BASENAME}:${LATEST}" "${BASENAME}:latest"

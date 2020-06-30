@@ -1,6 +1,6 @@
 language: bash
 sudo: required
-script: bash shellcheck && sudo bash buildall
+script: bash shellcheck && bash snapshot && sudo bash buildall
 dist: xenial
 services:
   - docker
