@@ -17,11 +17,7 @@ QUAY_BASENAME=quay.io/bitnami/minideb
 
 is_snapshot() {
     local -r dist_snapshot_regex="^(jessie|stretch|buster|unstable)-snapshot"
-    if [[ $1 =~ $dist_snapshot_regex ]]; then
-        true
-    else
-        false
-    fi
+    [[ $1 =~ $dist_snapshot_regex ]]
 }
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
