@@ -11,7 +11,7 @@ SNAPSHOT_ID=${3:-}
 
 # TRIM -snapshot from the distro
 IFS="-"
-read -a DISTARR <<< "$DIST"
+read -ra DISTARR <<< "$DIST"
 DIST="${DISTARR[0]}"
 unset IFS
 
