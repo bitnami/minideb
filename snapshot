@@ -23,4 +23,6 @@ get_debian_snapshot_id() {
     echo "$snapshot_id" > build/snapshot_id && return 0
 }
 
+mkdir -p build
+
 get_debian_snapshot_id
