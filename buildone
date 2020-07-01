@@ -41,16 +41,12 @@ log() {
     echo "$@" >&2
 }
 
-is_snapshot() {
-    local -r dist_snapshot_regex="^(jessie|stretch|buster|unstable)-snapshot"
-    [[ $1 =~ $dist_snapshot_regex ]]
-}
-
 build() {
     DIST=$1
-    if is_snapshot "$DIST"; then
-        ! debian_snapshot_id=$(cat build/snapshot_id) && return
-        TAG="${DIST}-${debian_snapshot_id}"
+
+    debian_snapshot_id=${2:-}
+    if [ -n "$debian_snapshot_id" ]; then
+        TAG="${DIST}-snapshot-${debian_snapshot_id}"
     else
         TAG=$DIST
     fi
@@ -108,4 +104,4 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-build "$1"
+build "$1" "$2"

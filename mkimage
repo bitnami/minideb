@@ -6,7 +6,7 @@ set -o pipefail
 ROOT=$(cd "$(dirname "$0")" && pwd)
 
 TARGET=${1:?Specify the target filename}
-DIST=${2%-*}
+DIST=${2:-stable}
 SNAPSHOT_ID=${3:-}
 
 LOGFILE=${TARGET}.log
