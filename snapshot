@@ -4,25 +4,34 @@ set -e
 set -u
 set -o pipefail
 
+snapshot_list_tmp_dir=$(mktemp -d)
+mkdir -p "${snapshot_list_tmp_dir}"
 
-get_debian_snapshot_id() {
-    local -r year=$(date -u +%G)
-    local -r month=$(date -u +%m)
-    local -r day=$(date -u +%d)
+get_latest_month_query(){
+    snapshot_archive_tmp_file="${snapshot_list_tmp_dir}/archive.html"
 
-    snapshot_list_tmp_dir=$(mktemp -d)
-    snapshot_list_tmp_file="${snapshot_list_tmp_dir}/${year}-${month}.html"
+    ! curl -sSfL "https://snapshot.debian.org/archive/debian/" > "$snapshot_archive_tmp_file" && echo "Error when accessing https://snapshot.debian.org/archive/debian/" && return 1
 
-    ! curl -sSfL "https://snapshot.debian.org/archive/debian/?year=$year&month=$month" > "$snapshot_list_tmp_file" && echo "Not found snapshots for these parameters: year=${year} month=${month}" && return 1
+    month_query=$(grep -Po "(\?year=\d\d\d\d&amp;month=\d+)" "${snapshot_archive_tmp_file}" | tail -1)
 
-    snapshot_id=$(grep -Po "(${year}${month}${day}T.*Z)" "${snapshot_list_tmp_file}" | tail -1)
+    [[ -z "$month_query" ]] && echo "Not found snapshots using the following regex: (?year=\d\d\d\d&amp;month=\d+)" && return 1
 
-    [[ -z "$snapshot_id" ]] && echo "Not found snapshot id using the following regex: (${year}${month}${day}T.*Z)" && return 1
+    echo "$month_query" && return 0
+}
 
-    rm -f "${snapshot_list_tmp_file}"
+get_latest_debian_snapshot_id() {
+    ! month_query=$(get_latest_month_query) && return 1
+
+    snapshot_list_tmp_file="${snapshot_list_tmp_dir}/month-snapshots.html"
+
+    ! curl -sSfL "https://snapshot.debian.org/archive/debian/$month_query" > "$snapshot_list_tmp_file" && echo "Not found snapshots for these parameters: query=${month_query}" && return 1
+
+    snapshot_id=$(grep -Po "(\d+T.*Z)" "${snapshot_list_tmp_file}" | tail -1)
+
+    [[ -z "$snapshot_id" ]] && echo "Not found snapshot id using the following regex: (\d+T.*Z)" && return 1
+
+    mkdir -p build
     echo "$snapshot_id" > build/snapshot_id && return 0
 }
 
-mkdir -p build
-
-get_debian_snapshot_id
+get_latest_debian_snapshot_id
