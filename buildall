@@ -6,12 +6,12 @@ set -e
 set -u
 set -o pipefail
 
-DISTS="buster-snapshot"
-
-# is_snapshot() {
-#     local -r dist_snapshot_regex="^(jessie|stretch|buster|unstable)-snapshot"
-#     [[ $1 =~ $dist_snapshot_regex ]]
-# }
+DISTS="jessie
+stretch
+buster
+buster-snapshot
+unstable
+"
 
 get_latest_month_query(){
     local -r snapshot_tmp_dir=$(mktemp -d)
