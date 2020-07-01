@@ -6,14 +6,8 @@ set -o pipefail
 ROOT=$(cd "$(dirname "$0")" && pwd)
 
 TARGET=${1:?Specify the target filename}
-DIST=${2:-stable}
+DIST=${2%%-*}
 SNAPSHOT_ID=${3:-}
-
-# TRIM -snapshot from the distro
-IFS="-"
-read -ra DISTARR <<< "$DIST"
-DIST="${DISTARR[0]}"
-unset IFS
 
 LOGFILE=${TARGET}.log
 
