@@ -20,7 +20,7 @@ done
 snapshot_id=$(./snapshot_id)
 if [ -n "$snapshot_id" ]; then
     for i in $dist_with_snapshot; do
-        ./build_latest_snapshot "$i" "$snapshot_id"
+        ./buildone_snapshot "$i" "$snapshot_id"
     done
 
     mkdir -p build
