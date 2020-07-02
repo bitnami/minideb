@@ -21,9 +21,10 @@ get_latest_month_query(){
 
     ! curl -sSfL "https://snapshot.debian.org/archive/debian/" > "$snapshot_archive_tmp_file" && echo "Error when accessing https://snapshot.debian.org/archive/debian/" && return 1
 
-    local -r month_query=$(grep -Po "(\?year=\d\d\d\d&amp;month=\d+)" "${snapshot_archive_tmp_file}" | tail -1)
+    local -r month_query_regex="(\?year=\d\d\d\d&amp;month=\d+)"
+    local -r month_query=$(grep -Po "${month_query_regex}" "${snapshot_archive_tmp_file}" | tail -1)
 
-    [[ -z "$month_query" ]] && echo "Not found snapshots using the following regex: (?year=\d\d\d\d&amp;month=\d+)" && return 1
+    [[ -z "$month_query" ]] && echo "Not found snapshots using the following regex: ${month_query_regex}" && return 1
 
     echo "$month_query"
 }
@@ -37,9 +38,10 @@ get_latest_debian_snapshot_id() {
 
     ! curl -sSfL "https://snapshot.debian.org/archive/debian/$month_query" > "$snapshot_list_tmp_file" && echo "Not found snapshots for these parameters: query=${month_query}" && return 1
 
-    local -r snapshot_id=$(grep -Po "(\d+T.*Z)" "${snapshot_list_tmp_file}" | tail -1)
+    local -r snapshot_id_regex="(\d+T.*Z)"
+    local -r snapshot_id=$(grep -Po "${snapshot_id_regex}" "${snapshot_list_tmp_file}" | tail -1)
 
-    [[ -z "$snapshot_id" ]] && echo "Not found snapshot id using the following regex: (\d+T.*Z)" && return 1
+    [[ -z "$snapshot_id" ]] && echo "Not found snapshot id using the following regex: ${snapshot_id_regex}" && return 1
 
     echo "$snapshot_id"
 }
