@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+set -u
+set -o pipefail
+
+dist=${1:?dist arg is required}
+snapshot_id=${2:-$(./snapshot_id)}
+
+./buildone "$dist" "$snapshot_id"

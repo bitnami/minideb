@@ -6,12 +6,23 @@ set -e
 set -u
 set -o pipefail
 
-DISTS="jessie
+dist="jessie
 stretch
 buster
 unstable
 "
+dist_with_snapshot="buster"
 
-for DIST in $DISTS; do
-    ./buildone "$DIST"
+for i in $dist; do
+    ./buildone "$i"
 done
+
+snapshot_id=$(./snapshot_id)
+if [ -n "$snapshot_id" ]; then
+    for i in $dist_with_snapshot; do
+        ./buildone_snapshot "$i" "$snapshot_id"
+    done
+
+    mkdir -p build
+    echo "$snapshot_id" > build/snapshot_id
+fi

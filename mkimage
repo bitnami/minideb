@@ -7,6 +7,7 @@ ROOT=$(cd "$(dirname "$0")" && pwd)
 
 TARGET=${1:?Specify the target filename}
 DIST=${2:-stable}
+SNAPSHOT_ID=${3:-}
 
 LOGFILE=${TARGET}.log
 
@@ -40,9 +41,17 @@ echo "Building base in $rootfsDir"
 DEBOOTSTRAP_DIR="$DEBOOTSTRAP_DIR" debootstrap --keyring "$KEYRING" --variant container --foreign "${DIST}" "$rootfsDir"
 chroot "$rootfsDir" bash debootstrap/debootstrap --second-stage
 
-echo -e "deb http://deb.debian.org/debian $DIST main" > "$rootfsDir/etc/apt/sources.list"
+repo_url="http://deb.debian.org/debian"
+sec_repo_url="http://security.debian.org/"
+
+if [ -n "$SNAPSHOT_ID" ]; then
+	repo_url="http://snapshot.debian.org/archive/debian/${SNAPSHOT_ID}/"
+	sec_repo_url="http://snapshot.debian.org/archive/debian-security/${SNAPSHOT_ID}/"
+fi
+
+echo -e "deb ${repo_url} $DIST main" > "$rootfsDir/etc/apt/sources.list"
 if [ "$DIST" != "unstable" ]; then
-    echo "deb http://security.debian.org/ $DIST/updates main" >> "$rootfsDir/etc/apt/sources.list"
+    echo "deb ${sec_repo_url} $DIST/updates main" >> "$rootfsDir/etc/apt/sources.list"
 fi
 
 chroot "$rootfsDir" apt-get update

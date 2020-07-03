@@ -43,37 +43,45 @@ log() {
 
 build() {
     DIST=$1
+
+    debian_snapshot_id=${2:-}
+    if [ -n "$debian_snapshot_id" ]; then
+        TAG="${DIST}-snapshot-${debian_snapshot_id}"
+    else
+        TAG=$DIST
+    fi
+
     [ -f "debootstrap/$DIST" ] || (echo "buildall: Unknown distribution: $DIST" && exit 1)
     current_ts="$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"
-    if docker pull "$BASENAME:$DIST" > /dev/null; then
-        target_ts="$(docker inspect "$BASENAME:$DIST" | jq --raw-output ".[0].Created")"
-        pulled_image_id="$(docker inspect "$BASENAME:$DIST" | jq --raw-output ".[0].Id")"
+    if docker pull "$BASENAME:$TAG" > /dev/null; then
+        target_ts="$(docker inspect "$BASENAME:$TAG" | jq --raw-output ".[0].Created")"
+        pulled_image_id="$(docker inspect "$BASENAME:$TAG" | jq --raw-output ".[0].Id")"
     else
         target_ts="$current_ts"
         pulled_image_id=
     fi
     log "============================================"
-    log "Building $BASENAME:$DIST"
+    log "Building $BASENAME:$TAG"
     log "============================================"
-    ./mkimage "build/$DIST.tar" "$DIST"
-    built_image_id=$(./import "build/$DIST.tar" "$target_ts")
+    ./mkimage "build/$TAG.tar" "$DIST" "${debian_snapshot_id:-}"
+    built_image_id=$(./import "build/$TAG.tar" "$target_ts")
     log "============================================"
-    log "Running tests for $BASENAME:$DIST"
+    log "Running tests for $BASENAME:$TAG"
     log "============================================"
-    ./test "$built_image_id" "$DIST"
+    ./test "$built_image_id" "$TAG"
     log "============================================"
-    log "Rebuilding $BASENAME:$DIST to test reproducibility"
+    log "Rebuilding $BASENAME:$TAG to test reproducibility"
     log "============================================"
-    ./mkimage "build/${DIST}-repro.tar" "$DIST"
-    repro_image_id=$(./import "build/${DIST}-repro.tar" "$target_ts")
+    ./mkimage "build/${TAG}-repro.tar" "$DIST" "${debian_snapshot_id:-}"
+    repro_image_id=$(./import "build/${TAG}-repro.tar" "$target_ts")
     if [ "$repro_image_id" != "$built_image_id" ]; then
-        log "$BASENAME:$DIST differs after a rebuild. Examine $built_image_id and $repro_image_id"
+        log "$BASENAME:$TAG differs after a rebuild. Examine $built_image_id and $repro_image_id"
         log "to find the differences and fix the build to be reproducible again."
         log "Changes (- first build, + second build):"
         ./dockerdiff "$built_image_id" "$repro_image_id" || true
         exit 1
     fi
-    rm "build/${DIST}-repro.tar"
+    rm "build/${TAG}-repro.tar"
     if [ -n "$pulled_image_id" ]; then
         if [ "$built_image_id" != "$pulled_image_id" ]; then
             log "Image changed $built_image_id (new) != $pulled_image_id (old)"
@@ -81,14 +89,14 @@ build() {
             ./dockerdiff "$pulled_image_id" "$built_image_id" || true
             # Re-import with the current timestamp so that the image shows
             # as new
-            built_image_id="$(./import "build/$DIST.tar" "$current_ts")"
+            built_image_id="$(./import "build/$TAG.tar" "$current_ts")"
         else
             log "Image didn't change"
             return
         fi
     fi
-    docker tag "$built_image_id" "$BASENAME:$DIST"
-    log "Tagged $built_image_id as $BASENAME:$DIST"
+    docker tag "$built_image_id" "$BASENAME:$TAG"
+    log "Tagged $built_image_id as $BASENAME:$TAG"
 }
 
 if [ -z "$1" ]; then
@@ -96,4 +104,4 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-build "$1"
+build "${1}" "${2:-}"
