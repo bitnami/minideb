@@ -9,7 +9,6 @@ set -o pipefail
 dist="jessie
 stretch
 buster
-unstable
 "
 dist_with_snapshot="buster"
 
