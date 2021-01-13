@@ -6,5 +6,6 @@ set -o pipefail
 
 dist=${1:?dist arg is required}
 snapshot_id=${2:-$(./snapshot_id)}
+platform=${3:-amd64}
 
-./buildone "$dist" "$snapshot_id"
+./buildone "$dist" "$platform" "$snapshot_id"

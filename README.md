@@ -53,7 +53,7 @@ We provide a Makefile to help you build Minideb locally. It should be run on a D
 $ sudo make
 ```
 
-To build an individual release (stretch, jessie or unstable)
+To build an individual release (stretch, buster or unstable)
 ```
 $ sudo make stretch
 ```
