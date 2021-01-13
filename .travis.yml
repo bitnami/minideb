@@ -1,22 +1,77 @@
 language: bash
-sudo: required
-script: bash shellcheck && sudo bash buildall
-dist: xenial
+dist: focal
+virt: vm
+group: edge
+os: linux
 services:
   - docker
-before_install:
-  - docker version
-  # Fix for Ubuntu Xenial apt-daily.service triggering
-  # https://unix.stackexchange.com/questions/315502/how-to-disable-apt-daily-service-on-ubuntu-cloud-vm-image
-  - |
-    while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
-      sleep 1
-    done
-  - sudo apt-get -qq update
-  - sudo apt-get install -y debian-archive-keyring debootstrap shellcheck
-deploy:
-  provider: script
-  script: bash pushall
-  skip_cleanup: true
-  on:
-    branch: master
+
+.build_job: &build_job
+  stage: build
+  before_install:
+    - docker version
+    # Fix for Ubuntu Xenial apt-daily.service triggering
+    # https://unix.stackexchange.com/questions/315502/how-to-disable-apt-daily-service-on-ubuntu-cloud-vm-image
+    - |
+      while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
+        sleep 1
+      done
+    - sudo rm /usr/local/bin/jq
+  install:
+    - sudo make .installed-requirements
+  script: sudo bash buildone $DIST $PLATFORM
+  after_success:
+    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo docker tag "bitnami/minideb:$DIST-$PLATFORM" "$BASENAME:latest-$PLATFORM" ; fi'
+    - 'if [[ "$TRAVIS_BRANCH" == "master" ]] ; then sudo bash pushone $DIST $PLATFORM ; fi'
+    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo bash pushone latest $PLATFORM ; fi'
+
+jobs:
+  include:
+    - stage: shellcheck
+      install:
+        - sudo apt-get -qq update
+        - sudo apt-get install -y shellcheck
+      script: bash shellcheck
+    - <<: *build_job
+      arch: amd64
+      env:
+        - DIST=jessie PLATFORM=amd64
+    - <<: *build_job
+      arch: amd64
+      env:
+        - DIST=stretch PLATFORM=amd64
+    - <<: *build_job
+      arch: amd64
+      env:
+        - DIST=buster PLATFORM=amd64
+    - <<: *build_job
+      arch: arm64-graviton2
+      env:
+        - DIST=stretch PLATFORM=arm64
+    - <<: *build_job
+      arch: arm64-graviton2
+      env:
+        - DIST=buster PLATFORM=arm64
+    - stage: deploy
+      if: branch = master AND type = push
+      env:
+        - DISTS="stretch buster latest"
+      before_install: mkdir $HOME/.docker
+      install: 'echo "{ \"experimental\": \"enabled\" }" > $HOME/.docker/config.json'
+      script:
+        - |
+          if [ -n "${DOCKER_PASSWORD:-}" ]; then
+              docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+          fi
+
+          # Create and merge a PR to update minideb-extras
+          CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
+          source <(curl -sSL "$CIRCLE_CI_FUNCTIONS_URL")
+          for DIST in $DISTS; do
+            sudo docker manifest create bitnami/minideb:$DIST bitnami/minideb:$DIST-amd64 bitnami/minideb:$DIST-arm64
+            sudo docker manifest push bitnami/minideb:$DIST
+
+            # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
+            DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "${BASENAME}:${DIST}")
+            update_minideb_derived "https://github.com/bitnami/minideb-runtimes" "$DIST" "$DIST_REPO_DIGEST"
+          done

@@ -43,8 +43,9 @@ log() {
 
 build() {
     DIST=$1
+    PLATFORM=${2:-amd64}
 
-    debian_snapshot_id=${2:-}
+    debian_snapshot_id=${3:-}
     if [ -n "$debian_snapshot_id" ]; then
         TAG="${DIST}-snapshot-${debian_snapshot_id}"
     else
@@ -64,7 +65,7 @@ build() {
     log "Building $BASENAME:$TAG"
     log "============================================"
     ./mkimage "build/$TAG.tar" "$DIST" "${debian_snapshot_id:-}"
-    built_image_id=$(./import "build/$TAG.tar" "$target_ts")
+    built_image_id=$(./import "build/$TAG.tar" "$target_ts" "$PLATFORM")
     log "============================================"
     log "Running tests for $BASENAME:$TAG"
     log "============================================"
@@ -73,7 +74,7 @@ build() {
     log "Rebuilding $BASENAME:$TAG to test reproducibility"
     log "============================================"
     ./mkimage "build/${TAG}-repro.tar" "$DIST" "${debian_snapshot_id:-}"
-    repro_image_id=$(./import "build/${TAG}-repro.tar" "$target_ts")
+    repro_image_id=$(./import "build/${TAG}-repro.tar" "$target_ts" "$PLATFORM")
     if [ "$repro_image_id" != "$built_image_id" ]; then
         log "$BASENAME:$TAG differs after a rebuild. Examine $built_image_id and $repro_image_id"
         log "to find the differences and fix the build to be reproducible again."
@@ -89,14 +90,14 @@ build() {
             ./dockerdiff "$pulled_image_id" "$built_image_id" || true
             # Re-import with the current timestamp so that the image shows
             # as new
-            built_image_id="$(./import "build/$TAG.tar" "$current_ts")"
+            built_image_id="$(./import "build/$TAG.tar" "$current_ts" "$PLATFORM")"
         else
             log "Image didn't change"
             return
         fi
     fi
-    docker tag "$built_image_id" "$BASENAME:$TAG"
-    log "Tagged $built_image_id as $BASENAME:$TAG"
+    docker tag "$built_image_id" "$BASENAME:$TAG-$PLATFORM"
+    log "Tagged $built_image_id as $BASENAME:$TAG-$PLATFORM"
 }
 
 if [ -z "$1" ]; then
@@ -104,4 +105,4 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-build "${1}" "${2:-}"
+build "$@"
