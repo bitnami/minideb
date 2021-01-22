@@ -19,10 +19,13 @@ services:
     - sudo rm /usr/local/bin/jq
   install:
     - sudo make .installed-requirements
-  script: sudo bash buildone $DIST $PLATFORM
+  script:
+    - sudo bash buildone $DIST $PLATFORM
+    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo bash buildone_snapshot $DIST "$(./snapshot_id)" $PLATFORM ; fi'
   after_success:
     - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo docker tag "bitnami/minideb:$DIST-$PLATFORM" "$BASENAME:latest-$PLATFORM" ; fi'
     - 'if [[ "$TRAVIS_BRANCH" == "master" ]] ; then sudo bash pushone $DIST $PLATFORM ; fi'
+    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo bash pushone "buster-$(./snapshot_id)" $PLATFORM ; fi'
     - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo bash pushone latest $PLATFORM ; fi'
 
 jobs:
@@ -45,11 +48,11 @@ jobs:
       env:
         - DIST=buster PLATFORM=amd64
     - <<: *build_job
-      arch: arm64-graviton2
+      arch: arm64
       env:
         - DIST=stretch PLATFORM=arm64
     - <<: *build_job
-      arch: arm64-graviton2
+      arch: arm64
       env:
         - DIST=buster PLATFORM=arm64
     - stage: deploy
@@ -67,7 +70,7 @@ jobs:
           # Create and merge a PR to update minideb-extras
           CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
           source <(curl -sSL "$CIRCLE_CI_FUNCTIONS_URL")
-          for DIST in $DISTS; do
+          for DIST in "$DISTS buster-$(./snapshot_id)"; do
             sudo docker manifest create bitnami/minideb:$DIST bitnami/minideb:$DIST-amd64 bitnami/minideb:$DIST-arm64
             sudo docker manifest push bitnami/minideb:$DIST
 
