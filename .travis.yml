@@ -48,11 +48,11 @@ jobs:
       env:
         - DIST=buster PLATFORM=amd64
     - <<: *build_job
-      arch: arm64
+      arch: arm64-graviton2
       env:
         - DIST=stretch PLATFORM=arm64
     - <<: *build_job
-      arch: arm64
+      arch: arm64-graviton2
       env:
         - DIST=buster PLATFORM=arm64
     - stage: deploy
