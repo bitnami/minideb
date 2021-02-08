@@ -33,7 +33,7 @@ set -e
 set -u
 set -o pipefail
 
-BASENAME=bitnami/minideb
+BASENAME=ryotakatsuki/minideb
 
 mkdir -p build
 
