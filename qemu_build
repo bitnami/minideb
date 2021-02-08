@@ -4,7 +4,7 @@ set -e
 set -u
 set -o pipefail
 
-BASENAME=bitnami/minideb
+BASENAME=ryotakatsuki/minideb
 pub_key_dir="$(mktemp -d)"
 
 do_ssh() {
