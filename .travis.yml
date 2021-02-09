@@ -7,7 +7,10 @@ services:
   - docker
 
 env:
-  - BASENAME=bitnami/minideb
+  global:
+    - BASENAME=bitnami/minideb
+    - LATEST=buster
+    - DISTS_WITH_SNAPSHOT="$LATEST"
 
 .build_job: &build_job
   stage: build
@@ -24,12 +27,12 @@ env:
     - sudo make .installed-requirements
   script:
     - sudo bash buildone $DIST $PLATFORM
-    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo bash buildone_snapshot $DIST "$(./snapshot_id)" $PLATFORM ; fi'
+    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DISTS_WITH_SNAPSHOT" =~ (^|[[:space:]])"$DIST"($|[[:space:]]) ]] ; then sudo bash buildone_snapshot $DIST "$(./snapshot_id)" $PLATFORM ; fi'
   after_success:
-    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo docker tag "$BASENAME:$DIST-$PLATFORM" "$BASENAME:latest-$PLATFORM" ; fi'
+    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$LATEST" == "$DIST" ]] ; then sudo docker tag "$BASENAME:$DIST-$PLATFORM" "$BASENAME:latest-$PLATFORM" ; fi'
     - 'if [[ "$TRAVIS_BRANCH" == "master" ]] ; then sudo bash pushone $DIST $PLATFORM ; fi'
-    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo bash pushone "buster-$(./snapshot_id)" $PLATFORM ; fi'
-    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DIST" == "buster" ]] ; then sudo bash pushone latest $PLATFORM ; fi'
+    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DISTS_WITH_SNAPSHOT" =~ (^|[[:space:]])"$DIST"($|[[:space:]]) ]] ; then sudo bash pushone "$DIST-snapshot-$(./snapshot_id)" $PLATFORM ; fi'
+    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$LATEST" == "$DIST" ]] ; then sudo bash pushone latest $PLATFORM ; fi'
 
 jobs:
   include:
@@ -73,9 +76,17 @@ jobs:
           # Create and merge a PR to update minideb-extras
           CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
           source <(curl -sSL "$CIRCLE_CI_FUNCTIONS_URL")
-          for DIST in $DISTS buster-$(./snapshot_id); do
+          for DIST in $DISTS ; do
             sudo docker manifest create $BASENAME:$DIST $BASENAME:$DIST-amd64 $BASENAME:$DIST-arm64
             sudo docker manifest push $BASENAME:$DIST
+            sudo docker pull $BASENAME:$DIST
+
+            if [[ "$DISTS_WITH_SNAPSHOT" =~ (^|[[:space:]])"$DIST"($|[[:space:]]) ]] ; then
+              SNAPSHOT_NAME="$DIST-snapshot-$(./snapshot_id)"
+              sudo docker manifest create $SNAPSHOT_NAME:$DIST $SNAPSHOT_NAME:$DIST-amd64 $SNAPSHOT_NAME:$DIST-arm64
+              sudo docker manifest push $SNAPSHOT_NAME:$DIST
+              sudo docker pull $SNAPSHOT_NAME:$DIST
+            fi
 
             # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
             DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$BASENAME:${DIST}")
