@@ -70,11 +70,11 @@ jobs:
           # Create and merge a PR to update minideb-extras
           CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
           source <(curl -sSL "$CIRCLE_CI_FUNCTIONS_URL")
-          for DIST in "$DISTS buster-$(./snapshot_id)"; do
+          for DIST in $DISTS buster-$(./snapshot_id); do
             sudo docker manifest create bitnami/minideb:$DIST bitnami/minideb:$DIST-amd64 bitnami/minideb:$DIST-arm64
             sudo docker manifest push bitnami/minideb:$DIST
 
             # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
-            DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "${BASENAME}:${DIST}")
+            DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "bitnami/minideb:${DIST}")
             update_minideb_derived "https://github.com/bitnami/minideb-runtimes" "$DIST" "$DIST_REPO_DIGEST"
           done
