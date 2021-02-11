@@ -53,7 +53,7 @@ desc "Checking that the terminfo is valid when running with -t (#17)"
 echo "" | test_extra_args '-t' bash -c 'install_packages procps && top -d1 -n1 -b'
 
 MYSQL_PACKAGE=default-mysql-server
-if [ "jessie" == "$DIST" ]; then
+if [[ "$DIST" == "jessie"* ]]; then
     MYSQL_PACKAGE=mysql-server
 fi
 

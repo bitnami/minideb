@@ -79,16 +79,35 @@ jobs:
           for DIST in $DISTS ; do
             sudo docker manifest create $BASENAME:$DIST $BASENAME:$DIST-amd64 $BASENAME:$DIST-arm64
             sudo docker manifest push $BASENAME:$DIST
-            sudo docker pull $BASENAME:$DIST
 
             if [[ "$DISTS_WITH_SNAPSHOT" =~ (^|[[:space:]])"$DIST"($|[[:space:]]) ]] ; then
               SNAPSHOT_NAME="$DIST-snapshot-$(./snapshot_id)"
-              sudo docker manifest create $SNAPSHOT_NAME:$DIST $SNAPSHOT_NAME:$DIST-amd64 $SNAPSHOT_NAME:$DIST-arm64
-              sudo docker manifest push $SNAPSHOT_NAME:$DIST
-              sudo docker pull $SNAPSHOT_NAME:$DIST
+              sudo docker manifest create $BASENAME:$SNAPSHOT_NAME $BASENAME:$SNAPSHOT_NAME-amd64 $BASENAME:$SNAPSHOT_NAME-arm64
+              sudo docker manifest push $BASENAME:$SNAPSHOT_NAME
             fi
 
             # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
-            DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$BASENAME:${DIST}")
+            DIST_REPO_DIGEST="$BASENAME"@$(docker manifest inspect "$BASENAME:${DIST}" | jq -r .manifests[0].digest)
             update_minideb_derived "https://github.com/$BASENAME-runtimes" "$DIST" "$DIST_REPO_DIGEST"
           done
+    - stage: deploy
+      if: branch = master AND type = push
+      env:
+        - DIST="jessie"
+      before_install: mkdir $HOME/.docker
+      install: 'echo "{ \"experimental\": \"enabled\" }" > $HOME/.docker/config.json'
+      script:
+        - |
+          if [ -n "${DOCKER_PASSWORD:-}" ]; then
+              docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+          fi
+
+          # Create and merge a PR to update minideb-extras
+          CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
+          source <(curl -sSL "$CIRCLE_CI_FUNCTIONS_URL")
+          sudo docker manifest create $BASENAME:$DIST $BASENAME:$DIST-amd64
+          sudo docker manifest push $BASENAME:$DIST
+
+          # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
+          DIST_REPO_DIGEST="$BASENAME"@$(docker manifest inspect "$BASENAME:${DIST}" | jq -r .manifests[0].digest)
+          update_minideb_derived "https://github.com/$BASENAME-runtimes" "$DIST" "$DIST_REPO_DIGEST"
