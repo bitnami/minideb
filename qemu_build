@@ -1,0 +1,154 @@
+#!/bin/bash
+
+set -e
+set -u
+set -o pipefail
+
+BASENAME=bitnami/minideb
+pub_key_dir="$(mktemp -d)"
+
+do_ssh() {
+  ssh -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" root@localhost -t -p 5555 -i "$pub_key_dir/id_rsa" "$@"
+}
+
+finish() {
+  echo "Shutting down QEMU..."
+
+  n=0
+  until [ "$n" -ge 15 ]
+  do
+     do_ssh "true" && break
+     n=$((n+1))
+     sleep 30
+  done
+
+  do_ssh "poweroff" || true
+
+  sleep 5
+  n=0
+  until [ "$n" -ge 5 ]
+  do
+     kill -0 "$PID" && break
+     n=$((n+1))
+     sleep 5
+  done
+
+  kill -9 "$PID" || true
+  rm -f "$IMAGE_FILE" "$PIDFILE"
+}
+
+if [[ ! -f /etc/debian_version ]]; then
+  echo "minideb can currently only be built on debian based distros, aborting..."
+  exit 1
+fi
+
+if [ -z "$1" ]; then
+    echo "You must specify the dist to build"
+    exit 1
+fi
+
+DIST=$1
+PLATFORM=${2:-amd64}
+DEBIAN_SNAPSHOT_ID=${3:-}
+
+make .installed-qemu
+mkdir -p .kvm-images/{amd64,arm64}
+
+if [[ ! -f .kvm-images/amd64/buster-server-cloudimg-amd64.qcow2 && "$PLATFORM" == "amd64" ]]; then
+  curl -SL https://cdimage.debian.org/cdimage/openstack/current/debian-10-openstack-amd64.qcow2 > .kvm-images/amd64/buster-server-cloudimg-amd64.qcow2
+fi
+
+if [[ ! -f .kvm-images/arm64/buster-server-cloudimg-arm64.qcow2 && "$PLATFORM" == "arm64" ]]; then
+  curl -SL https://cdimage.debian.org/cdimage/openstack/current/debian-10-openstack-arm64.qcow2 > .kvm-images/arm64/buster-server-cloudimg-arm64.qcow2
+  curl -SL https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd > .kvm-images/arm64/QEMU_EFI.fd
+fi
+
+IMAGE_FILE="build/$DIST/$PLATFORM/instance.qcow2"
+PIDFILE="build/$DIST/$PLATFORM/instance.pid"
+TARGET_FILE="build/$DIST/$PLATFORM/image.tar"
+
+mkdir -p "build/$DIST/$PLATFORM"
+
+qemu-img create -f qcow2 -o backing_file="../../../.kvm-images/$PLATFORM/buster-server-cloudimg-$PLATFORM.qcow2" "$IMAGE_FILE"
+qemu-img resize "$IMAGE_FILE" 8G
+
+USER_DATA='
+#cloud-config
+disable_root: false
+
+# USEFUL FOR DEBUG SSH CONNECTION ISSUES
+# chpasswd:
+#   list: |
+#     root:root
+#   expire: False
+
+users:
+    - name: root
+      ssh_authorized_keys:
+        - '
+
+cat /dev/zero | ssh-keygen -q -t rsa -f "$pub_key_dir/id_rsa" -N "" || true
+echo "$USER_DATA$(cat "$pub_key_dir/id_rsa.pub")" > "$pub_key_dir/user-data"
+
+cloud-localds "$pub_key_dir/user-data.img" "$pub_key_dir/user-data"
+
+case $PLATFORM in
+amd64)
+  qemu-system-x86_64 \
+    -enable-kvm \
+    -device virtio-net,netdev=net0 \
+    -netdev user,id=net0,hostfwd=tcp::5555-:22 \
+    -boot c \
+    -pidfile "$PIDFILE" \
+    -m 2G \
+    -drive "file=$IMAGE_FILE,format=qcow2" \
+    -drive "file=$pub_key_dir/user-data.img,format=raw" \
+    -vga none \
+    -nographic &
+  ;;
+arm64)
+  qemu-system-aarch64 \
+    -accel tcg,thread=multi \
+    -machine virt \
+    -cpu cortex-a57 \
+    -device virtio-net,netdev=net0 \
+    -netdev user,id=net0,hostfwd=tcp::5555-:22 \
+    -boot c \
+    -pidfile "$PIDFILE" \
+    -m 2G \
+    -monitor telnet::45454,server,nowait \
+    -bios .kvm-images/arm64/QEMU_EFI.fd  \
+    -drive "file=$IMAGE_FILE,format=qcow2" \
+    -drive "file=$pub_key_dir/user-data.img,format=raw" \
+    -vga none \
+    -nographic &
+  ;;
+esac
+
+trap finish EXIT
+
+sleep 30
+n=0
+until [ "$n" -ge 15 ]
+do
+   do_ssh "true" && break
+   n=$((n+1))
+   sleep 30
+done
+
+PID="$(cat "$PIDFILE")"
+
+do_ssh "apt-get update && apt-get install -y apt-transport-https make rsync ca-certificates curl gnupg-agent software-properties-common && mkdir /build"
+do_ssh "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -"
+do_ssh "add-apt-repository \"deb [arch=$PLATFORM] https://download.docker.com/linux/debian \$(lsb_release -cs) stable\""
+do_ssh "apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io"
+rsync -avz -e "ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p 5555 -i $pub_key_dir/id_rsa" --exclude ".git" --exclude ".installed-requirements" --exclude ".kvm-images" --exclude "build" --exclude "ssh" ./ "root@localhost:/build/."
+do_ssh "cd /build/ && make .installed-requirements"
+
+do_ssh "cd /build/ && ./buildone \"$DIST\" \"$PLATFORM\" \"$DEBIAN_SNAPSHOT_ID\""
+rsync -avz -e "ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p 5555 -i $pub_key_dir/id_rsa" "root@localhost:/build/build/$DIST.tar" "./$TARGET_FILE"
+
+current_ts="$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"
+built_image_id=$(./import "$TARGET_FILE" "$current_ts" "$PLATFORM")
+docker tag "$built_image_id" "$BASENAME:$DIST-$PLATFORM"
+

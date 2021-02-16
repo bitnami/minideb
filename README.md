@@ -53,7 +53,7 @@ We provide a Makefile to help you build Minideb locally. It should be run on a D
 $ sudo make
 ```
 
-To build an individual release (stretch, jessie or unstable)
+To build an individual release (stretch, buster or unstable)
 ```
 $ sudo make stretch
 ```
@@ -62,6 +62,24 @@ To test the resulting image:
 ```
 $ sudo make test-stretch
 ```
+
+## Building Minideb for foreign architecture
+Make commands shown above will build an image for the architecture you are currently working on.  
+To build an image for a foreign architecture (for example to build a multiarch image), we provide a
+simple script which run a QEMU instance for the target architecture and build the image inside it.
+
+To build and test a buster image for arm64:
+```
+$ ./qemu_build buster arm64
+```
+
+The image will be then imported locally through the docker cli with `$distribution-$architecture` tag
+(example: `bitnami/minideb:buster-arm64`)
+
+Current limitations of `qemu_build` script:
+
+- Can be run only on debian-based distributions
+- Support `AMD64` and `ARM64` target architectures only
 
 # Contributing
 We'd love for you to contribute to this image. You can request new features by creating an [issue](https://github.com/bitnami/minideb/issues), or submit a [pull request](https://github.com/bitnami/minideb/pulls) with your contribution.

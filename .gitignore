@@ -1,3 +1,5 @@
 build
+.kvm-images
 .installed-requirements
+.installed-qemu
 namibase/nami-linux-x64.tar.gz
