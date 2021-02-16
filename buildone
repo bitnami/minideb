@@ -97,7 +97,7 @@ build() {
         fi
     fi
     docker tag "$built_image_id" "$BASENAME:$TAG"
-    log "Tagged $built_image_id as $BASENAME:$TAG
+    log "Tagged $built_image_id as $BASENAME:$TAG"
 }
 
 if [ -z "$1" ]; then
