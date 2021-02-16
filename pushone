@@ -40,7 +40,15 @@ push() {
     gcloud docker -- push "${GCR_BASENAME}:${dist}"
 }
 
-docker tag "${BASENAME}:${DIST}" "${QUAY_BASENAME}:${DIST}-${PLATFORM}"
-docker tag "${BASENAME}:${DIST}" "${GCR_BASENAME}:${DIST}-${PLATFORM}"
+docker tag "${BASENAME}:${DIST}-${PLATFORM}" "${QUAY_BASENAME}:${DIST}-${PLATFORM}"
+docker tag "${BASENAME}:${DIST}-${PLATFORM}" "${GCR_BASENAME}:${DIST}-${PLATFORM}"
+
 push "$DIST-${PLATFORM}"
 
+# For now, tag DIST to the amd64 flavor
+if [[ "$PLATFORM" == "amd64" ]]; then
+    docker tag "${QUAY_BASENAME}:${DIST}-${PLATFORM}" "${QUAY_BASENAME}:${DIST}"
+    docker tag "${GCR_BASENAME}:${DIST}-${PLATFORM}" "${GCR_BASENAME}:${DIST}"
+    docker push "${QUAY_BASENAME}:${DIST}"
+    gcloud docker -- push "${GCR_BASENAME}:${DIST}"
+fi
