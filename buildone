@@ -54,7 +54,7 @@ build() {
 
     [ -f "debootstrap/$DIST" ] || (echo "buildall: Unknown distribution: $DIST" && exit 1)
     current_ts="$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"
-    if docker pull "$BASENAME:$TAG-$PLATFORM" > /dev/null; then
+    if docker pull "$BASENAME:$TAG" > /dev/null; then
         target_ts="$(docker inspect "$BASENAME:$TAG" | jq --raw-output ".[0].Created")"
         pulled_image_id="$(docker inspect "$BASENAME:$TAG" | jq --raw-output ".[0].Id")"
     else
