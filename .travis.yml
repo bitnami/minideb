@@ -85,10 +85,13 @@ jobs:
               sudo docker manifest create $BASENAME:$SNAPSHOT_NAME $BASENAME:$SNAPSHOT_NAME-amd64 $BASENAME:$SNAPSHOT_NAME-arm64
               sudo docker manifest push $BASENAME:$SNAPSHOT_NAME
             fi
-
-            # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
-            DIST_REPO_DIGEST="$BASENAME"@$(docker manifest inspect "$BASENAME:${DIST}" | jq -r .manifests[0].digest)
-            update_minideb_derived "https://github.com/$BASENAME-runtimes" "$DIST" "$DIST_REPO_DIGEST"
+            if [ -n "${DISABLE_UPDATE_DERIVED:-}" ]; then
+              echo "Disabling update_minideb_derived step per configuration"
+            else
+              # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
+              DIST_REPO_DIGEST="$BASENAME"@$(docker manifest inspect "$BASENAME:${DIST}" | jq -r .manifests[0].digest)
+              update_minideb_derived "https://github.com/$BASENAME-runtimes" "$DIST" "$DIST_REPO_DIGEST"
+            fi
           done
     - stage: deploy
       if: branch = master AND type = push
@@ -101,13 +104,15 @@ jobs:
           if [ -n "${DOCKER_PASSWORD:-}" ]; then
               docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
           fi
-
           # Create and merge a PR to update minideb-extras
           CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent.com/bitnami/test-infra/master/circle/functions}
           source <(curl -sSL "$CIRCLE_CI_FUNCTIONS_URL")
           sudo docker manifest create $BASENAME:$DIST $BASENAME:$DIST-amd64
           sudo docker manifest push $BASENAME:$DIST
-
-          # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
-          DIST_REPO_DIGEST="$BASENAME"@$(docker manifest inspect "$BASENAME:${DIST}" | jq -r .manifests[0].digest)
-          update_minideb_derived "https://github.com/$BASENAME-runtimes" "$DIST" "$DIST_REPO_DIGEST"
+          if [ -n "${DISABLE_UPDATE_DERIVED:-}" ]; then
+              echo "Disabling update_minideb_derived step per configuration"
+          else
+              # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
+              DIST_REPO_DIGEST="$BASENAME"@$(docker manifest inspect "$BASENAME:${DIST}" | jq -r .manifests[0].digest)
+              update_minideb_derived "https://github.com/$BASENAME-runtimes" "$DIST" "$DIST_REPO_DIGEST"
+          fi
