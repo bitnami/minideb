@@ -51,6 +51,7 @@ fi
 
 if [ -n "${GCR_KEY:-}" ]; then
     gcloud auth activate-service-account "$GCR_EMAIL" --key-file <(echo "$GCR_KEY")
+    gcloud auth print-access-token | run_docker login -u oauth2accesstoken --password-stdin gcr.io
 fi
 
 push_manifest() {
