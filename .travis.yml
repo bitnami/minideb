@@ -27,12 +27,14 @@ env:
     - sudo make .installed-requirements
   script:
     - sudo bash buildone $DIST $PLATFORM
-    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DISTS_WITH_SNAPSHOT" =~ (^|[[:space:]])"$DIST"($|[[:space:]]) ]] ; then sudo bash buildone_snapshot $DIST "$(./snapshot_id)" $PLATFORM ; fi'
+    - 'if [[ "${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}" == "master" && "$DISTS_WITH_SNAPSHOT" =~ (^|[[:space:]])"$DIST"($|[[:space:]]) ]] ; then sudo bash buildone_snapshot $DIST "$(./snapshot_id)" $PLATFORM ; fi'
   after_success:
-    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$LATEST" == "$DIST" ]] ; then sudo docker tag "$BASENAME:$DIST-$PLATFORM" "$BASENAME:latest-$PLATFORM" ; fi'
-    - 'if [[ "$TRAVIS_BRANCH" == "master" ]] ; then sudo bash pushone $DIST $PLATFORM ; fi'
-    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$DISTS_WITH_SNAPSHOT" =~ (^|[[:space:]])"$DIST"($|[[:space:]]) ]] ; then sudo bash pushone "$DIST-snapshot-$(./snapshot_id)" $PLATFORM ; fi'
-    - 'if [[ "$TRAVIS_BRANCH" == "master" && "$LATEST" == "$DIST" ]] ; then sudo bash pushone latest $PLATFORM ; fi'
+    - export BRANCH="${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}"
+    - echo "Using branch $BRANCH"
+    - 'if [[ "$BRANCH" == "master" && "$LATEST" == "$DIST" ]] ; then sudo docker tag "$BASENAME:$DIST-$PLATFORM" "$BASENAME:latest-$PLATFORM" ; fi'
+    - 'if [[ "$BRANCH" == "master" ]] ; then sudo bash pushone $DIST $PLATFORM ; fi'
+    - 'if [[ "$BRANCH" == "master" && "$DISTS_WITH_SNAPSHOT" =~ (^|[[:space:]])"$DIST"($|[[:space:]]) ]] ; then sudo bash pushone "$DIST-snapshot-$(./snapshot_id)" $PLATFORM ; fi'
+    - 'if [[ "$BRANCH" == "master" && "$LATEST" == "$DIST" ]] ; then sudo bash pushone latest $PLATFORM ; fi'
 
 jobs:
   include:
