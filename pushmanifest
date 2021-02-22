@@ -1,0 +1,96 @@
+#!/bin/bash
+
+set -e
+set -u
+set -o pipefail
+
+DISTS=${DISTS:-"stretch
+buster
+latest
+"}
+
+DISTS_WITH_SNAPSHOT=${DISTS_WITH_SNAPSHOT:-buster}
+BASENAME=bitnami/minideb
+GCR_BASENAME=gcr.io/bitnami-containers/minideb
+QUAY_BASENAME=quay.io/bitnami/minideb
+PLATFORMS=${PLATFORMS:-amd64 arm64}
+DRY_RUN=${DRY_RUN:-}
+
+read -r -a ARCHS <<<"$PLATFORMS"
+
+run_docker() {
+    if [[ -n "${DRY_RUN:-}" ]]; then
+        echo "DRY RUN docker ${*}"
+    else
+        docker "$@"
+    fi
+}
+
+list_includes() {
+    local list=""
+    local element=""
+    list=${1?You must provide a list}
+    element=${2:?You must provide an element}
+    for candidate in $list; do
+        if [[ "$candidate" == "$element" ]]; then
+            true
+            return
+        fi
+    done
+    false
+    return
+}
+
+if [ -n "${DOCKER_PASSWORD:-}" ]; then
+    run_docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+fi
+
+if [ -n "${QUAY_PASSWORD:-}" ]; then
+    run_docker login -u "$QUAY_USERNAME" -p "$QUAY_PASSWORD" quay.io
+fi
+
+if [ -n "${GCR_KEY:-}" ]; then
+    gcloud auth activate-service-account "$GCR_EMAIL" --key-file <(echo "$GCR_KEY")
+    gcloud auth print-access-token | run_docker login -u oauth2accesstoken --password-stdin gcr.io
+fi
+
+push_manifest() {
+    local image=""
+    local archs=""
+    image="${1:?You must provide the image base to publish}"
+    archs=("${@:2}")
+    local arch_images=()
+    for arch in "${archs[@]}"; do
+        arch_images+=("$image-$arch")
+    done
+    run_docker manifest create "$image" "${arch_images[@]}"
+    run_docker manifest push "$image"
+}
+
+tags=()
+
+for DIST in $DISTS; do
+    tags+=("$DIST")
+    if list_includes "$DISTS_WITH_SNAPSHOT" "$DIST" ; then
+        tags+=("$DIST-snapshot-$(./snapshot_id)")
+    fi
+done
+
+repositories=("$BASENAME")
+
+if [[ -n "${QUAY_PASSWORD:-}" ]]; then
+    repositories+=("$QUAY_BASENAME")
+else
+    echo "Skipping repository quay.io (empty password)"
+fi
+if [[ -n "${GCR_KEY:-}" ]]; then
+    repositories+=("$GCR_BASENAME")
+else
+    echo "Skipping repository gcr.io (empty password)"
+fi
+
+for tag in "${tags[@]}"; do
+    for repo in "${repositories[@]}"; do
+        push_manifest "$repo:$tag" "${ARCHS[@]}"
+    done
+done
