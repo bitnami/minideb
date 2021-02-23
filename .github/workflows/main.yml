@@ -1,0 +1,119 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches:
+      - master
+  pull_request:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+env:
+  BASENAME: bitnami/minideb
+  LATEST: buster
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  shellcheck:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-20.04
+    name: Shellcheck
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get install -y shellcheck
+      - name: Verify scripts with shellcheck
+        run: |
+          bash shellcheck
+  build_jessie:
+    runs-on: ubuntu-20.04
+    needs: [ shellcheck ]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Use local build action
+        uses: ./.github/actions/build
+        with:
+          dist: "jessie"
+          platform: "amd64"
+      - name: Push
+        if: github.ref == 'refs/heads/master'
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          GCR_KEY: ${{ secrets.GCR_KEY }}
+          GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
+          DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
+        run: |
+          bash pushone jessie amd64
+
+  build_multiarch:
+    runs-on: ubuntu-20.04
+    needs: [ shellcheck ]
+    strategy:
+      matrix:
+        dist: [stretch, buster]
+        arch: [amd64, arm64]
+
+    name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Use local build action
+        id: build
+        uses: ./.github/actions/build
+        with:
+          dist: "${{ matrix.dist }}"
+          platform: "${{ matrix.arch }}"
+          is_latest: ${{ matrix.dist == env.LATEST }}
+          build_snapshot: ${{ matrix.dist == env.LATEST }}
+      - name: Push
+        if: github.ref == 'refs/heads/master'
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          GCR_KEY: ${{ secrets.GCR_KEY }}
+          GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
+          DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
+        run: |
+          bash pushone "${{ matrix.dist }}" "${{ matrix.arch }}"
+          if ${{ matrix.dist == env.LATEST }} ; then
+             bash pushone "latest" "${{ matrix.arch }}"
+          fi
+          if ${{ matrix.dist == env.LATEST }} ; then
+             bash pushone "${{ matrix.dist }}-snapshot-${{ steps.build.outputs.snapshot-id }}" "${{ matrix.arch }}"
+          fi
+
+  deploy_manifests:
+    runs-on: ubuntu-20.04
+    needs: [ build_multiarch, build_jessie ]
+    if: github.ref == 'refs/heads/master'
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      GCR_KEY: ${{ secrets.GCR_KEY }}
+      GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
+      DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
+      DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Push Manifests
+        run: |
+          DISTS="stretch buster latest" bash pushmanifest
+          DISTS=jessie PLATFORMS=amd64 bash pushmanifest

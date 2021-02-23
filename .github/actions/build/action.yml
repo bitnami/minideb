@@ -1,0 +1,52 @@
+inputs:
+  dist:
+    description: 'Dist to build'
+    default: 'buster'
+  platform:
+    description: 'Platform to build'
+    default: 'amd64'
+  is_latest:
+    description: The created dist is also latest
+    default: false
+  build_snapshot:
+    description: Build snapshot build
+    default: false
+outputs:
+  snapshot-id:
+    description: "Created snapshot id if requested to build it"
+    value: ${{ steps.snapshot-id.outputs.snapshot-id }}
+runs:
+  using: "composite"
+  steps:
+    - name: Fix for Ubuntu Xenial apt-daily.service triggering
+      run: |
+        while sudo fuser /var/{lib/{dpkg,apt/lists},cache/apt/archives}/lock >/dev/null 2>&1; do
+          sleep 1
+        done
+      shell: bash
+    - run: sudo make .installed-requirements
+      shell: bash
+    - name: Build snapshot id
+      id: snapshot-id
+      run: |
+        if ${{ inputs.build_snapshot }} ; then
+           echo "::set-output name=snapshot-id::$(./snapshot_id)"
+        fi
+      shell: bash
+    - name: "Build image"
+      run: |
+        set -x
+        echo Building  ${{ inputs.dist }} - ${{ inputs.platform }}
+        if [[ "${{ inputs.platform }}" == "arm64" ]]; then
+          sudo apt-get update -qq && sudo apt-get install -y qemu-user-static
+        fi
+        sudo -E bash -x buildone "${{ inputs.dist }}" "${{ inputs.platform }}"
+        if ${{ inputs.build_snapshot }} ; then
+             sudo -E bash -x buildone_snapshot "${{ inputs.dist }}" "${{ steps.snapshot-id.outputs.snapshot-id }}" "${{ inputs.platform }}"
+        fi
+        if ${{ inputs.is_latest }} ; then
+          BASENAME=${BASENAME:?Undefined or empty BASENAME}
+          echo "Tagging latest"
+          docker tag $BASENAME:${{ inputs.dist }}-${{ inputs.platform }} $BASENAME:latest-${{ inputs.platform }}
+        fi
+      shell: bash

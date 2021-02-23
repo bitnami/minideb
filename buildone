@@ -64,16 +64,16 @@ build() {
     log "============================================"
     log "Building $BASENAME:$TAG"
     log "============================================"
-    ./mkimage "build/$TAG.tar" "$DIST" "${debian_snapshot_id:-}"
+    ./mkimage "build/$TAG.tar" "$DIST" "$PLATFORM" "${debian_snapshot_id:-}"
     built_image_id=$(./import "build/$TAG.tar" "$target_ts" "$PLATFORM")
     log "============================================"
     log "Running tests for $BASENAME:$TAG"
     log "============================================"
-    ./test "$built_image_id" "$TAG"
+    ./test "$built_image_id" "$TAG" "$PLATFORM"
     log "============================================"
     log "Rebuilding $BASENAME:$TAG to test reproducibility"
     log "============================================"
-    ./mkimage "build/${TAG}-repro.tar" "$DIST" "${debian_snapshot_id:-}"
+    ./mkimage "build/${TAG}-repro.tar" "$DIST" "$PLATFORM" "${debian_snapshot_id:-}"
     repro_image_id=$(./import "build/${TAG}-repro.tar" "$target_ts" "$PLATFORM")
     if [ "$repro_image_id" != "$built_image_id" ]; then
         log "$BASENAME:$TAG differs after a rebuild. Examine $built_image_id and $repro_image_id"
