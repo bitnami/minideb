@@ -19,9 +19,14 @@ function test() {
 bind_mounts=( )
 docker_platform_args=( )
 if [[ "$PLATFORM" == "arm64" ]]; then
-    for qemu_static_file in /usr/bin/qemu-*-static; do
-        bind_mounts+=( -v="$qemu_static_file:$qemu_static_file" )
-    done
+    if [[ "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ]]; then
+        echo "Running in arm host. QEMU is not needed"
+    else
+        echo "Setting up qemu static"
+        for qemu_static_file in /usr/bin/qemu-*-static; do
+            bind_mounts+=( -v="$qemu_static_file:$qemu_static_file" )
+        done
+    fi
     docker_platform_args+=( --platform "linux/arm64" )
 fi
 

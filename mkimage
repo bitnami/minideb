@@ -28,7 +28,7 @@ if [ -f "${ROOT}/keys/${DIST}.gpg" ]; then
 fi
 
 use_qemu_static() {
-    [[ "$PLATFORM" == "arm64" ]]
+    [[ "$PLATFORM" == "arm64" && ! ( "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ) ]]
 }
 
 export DEBIAN_FRONTEND=noninteractive
