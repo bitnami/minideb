@@ -51,6 +51,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          GCR_EMAIL: ${{ secrets.GCR_EMAIL }}
           GCR_KEY: ${{ secrets.GCR_KEY }}
           GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
           DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
@@ -85,6 +86,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+          GCR_EMAIL: ${{ secrets.GCR_EMAIL }}
           GCR_KEY: ${{ secrets.GCR_KEY }}
           GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
           DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
@@ -107,6 +109,7 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      GCR_EMAIL: ${{ secrets.GCR_EMAIL }}
       GCR_KEY: ${{ secrets.GCR_KEY }}
       GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
       DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
