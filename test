@@ -4,7 +4,7 @@ set -eu
 
 IMAGE_ID=$1
 DIST=$2
-
+PLATFORM=${3:-amd64}
 function desc() {
     echo "================================"
     echo -n "TEST: "
@@ -16,10 +16,24 @@ function test() {
     test_extra_args '' "$@"
 }
 
+bind_mounts=( )
+docker_platform_args=( )
+if [[ "$PLATFORM" == "arm64" ]]; then
+    if [[ "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ]]; then
+        echo "Running in arm host. QEMU is not needed"
+    else
+        echo "Setting up qemu static"
+        for qemu_static_file in /usr/bin/qemu-*-static; do
+            bind_mounts+=( -v="$qemu_static_file:$qemu_static_file" )
+        done
+        docker_platform_args+=( --platform "linux/arm64" )
+    fi
+fi
+
 function test_extra_args() {
     local extra_args=$1
     shift
-    docker run --rm $extra_args -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" "$@"
+    docker run "${docker_platform_args[@]}" --rm "${bind_mounts[@]}" $extra_args -e DEBIAN_FRONTEND=noninteractive "$IMAGE_ID" "$@"
     echo ""
     echo TEST: OK
     echo ""
@@ -28,6 +42,15 @@ function test_extra_args() {
 desc "Checking that apt is installed"
 test dpkg -l apt
 
+desc "Arch matches"
+if [[ "$PLATFORM" == "amd64" ]]; then
+    test bash -c 'echo "$(uname -m)" && [[ "$(uname -m)" == *x86_64* ]]'
+elif [[ "$PLATFORM" == "arm64" ]]; then
+    test bash -c 'echo "$(uname -m)" && [[ "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ]]'
+else
+    echo Unknown platform $PLATFORM >&2
+    exit 1
+fi
 desc "Checking that a package can be installed with apt"
 test bash -c 'apt-get update && apt-get -y install less && less --help >/dev/null'
 

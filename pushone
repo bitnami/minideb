@@ -12,15 +12,18 @@ GCR_BASENAME=gcr.io/bitnami-containers/minideb
 QUAY_BASENAME=quay.io/bitnami/minideb
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
-    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 fi
 
 if [ -n "${QUAY_PASSWORD:-}" ]; then
-    docker login -u "$QUAY_USERNAME" -p "$QUAY_PASSWORD" quay.io
+    echo "$QUAY_PASSWORD" | docker login -u "$QUAY_USERNAME" --password-stdin quay.io
 fi
 
 if [ -n "${GCR_KEY:-}" ]; then
     gcloud auth activate-service-account "$GCR_EMAIL" --key-file <(echo "$GCR_KEY")
+    gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin gcr.io
+elif [ -n "${GCR_TOKEN:-}" ]; then
+    echo "${GCR_TOKEN:-}" | docker login -u oauth2accesstoken --password-stdin gcr.io
 fi
 
 ENABLE_DOCKER_CONTENT_TRUST=0
@@ -37,10 +40,11 @@ push() {
     local dist="$1"
     DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${dist}"
     docker push "${QUAY_BASENAME}:${dist}"
-    gcloud docker -- push "${GCR_BASENAME}:${dist}"
+    docker push "${GCR_BASENAME}:${dist}"
 }
 
 docker tag "${BASENAME}:${DIST}-${PLATFORM}" "${QUAY_BASENAME}:${DIST}-${PLATFORM}"
 docker tag "${BASENAME}:${DIST}-${PLATFORM}" "${GCR_BASENAME}:${DIST}-${PLATFORM}"
 
 push "$DIST-${PLATFORM}"
+
