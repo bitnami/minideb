@@ -26,6 +26,20 @@ runs:
       shell: bash
     - run: sudo make .installed-requirements
       shell: bash
+    - name: Install gcloud
+      run: |
+        if ! command -v gcloud &> /dev/null
+          then
+            echo "Installing gcloud"
+            echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+            apt-get update
+            apt-get install -y google-cloud-sdk
+        else
+            echo "gcloud is installed"
+        fi
+      shell: bash
     - name: Build snapshot id
       id: snapshot-id
       run: |
