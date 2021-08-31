@@ -66,7 +66,7 @@ jobs:
     needs: [ shellcheck ]
     strategy:
       matrix:
-        dist: [stretch, buster]
+        dist: [stretch, buster, bullseye]
         arch: [amd64, arm64]
 
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
@@ -120,5 +120,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: Push Manifests
         run: |
-          DISTS="stretch buster latest" bash pushmanifest
+          DISTS="stretch buster bullseye latest" bash pushmanifest
           DISTS=jessie PLATFORMS=amd64 bash pushmanifest
