@@ -68,10 +68,7 @@ jobs:
       matrix:
         dist: [stretch, buster, bullseye]
         arch: [amd64, arm64]
-        exclude:
-          # bullseye arm fails to debootstrap with qemu: https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/1928075
-          - dist: bullseye
-            arch: arm64
+
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
     steps:
       - name: Check out repository
@@ -123,5 +120,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: Push Manifests
         run: |
-          DISTS="stretch buster latest" bash pushmanifest
-          DISTS="jessie bullseye" PLATFORMS=amd64 bash pushmanifest
+          DISTS="stretch buster bullseye latest" bash pushmanifest
+          DISTS=jessie PLATFORMS=amd64 bash pushmanifest
