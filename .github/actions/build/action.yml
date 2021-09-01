@@ -40,6 +40,37 @@ runs:
             echo "gcloud is installed"
         fi
       shell: bash
+    - name: "Install QEMU"
+      run: |
+        set -x
+        if [[ "${{ inputs.platform }}" == "arm64" ]]; then
+          echo "Installing QEMU"
+          # qemu-user-static fails with segfaults building bullseye
+          # We will revisit this when 20.10 is allowed as build slave on GitHub Actions
+          # https://bugs.launchpad.net/qemu/+bug/1749393
+          # https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/1928075
+          if [[ "${{ inputs.dist }}" == "bullseye" ]]; then
+            sudo tee /etc/apt/preferences.d/qemu <<EOF
+        Package: *
+        Pin: release n=focal
+        Pin-Priority: 900
+        Package: *
+        Pin: release n=groovy
+        Pin-Priority: 400
+        EOF
+            sudo tee /etc/apt/sources.list.d/groovy.list <<EOF
+        deb http://archive.ubuntu.com/ubuntu groovy universe
+        deb http://archive.ubuntu.com/ubuntu groovy-updates universe
+        deb http://security.ubuntu.com/ubuntu groovy-security universe
+        EOF
+            sudo apt-get update -qq && sudo apt-get install -y -t groovy qemu-user-static
+          else
+            sudo apt-get update -qq && sudo apt-get install -y qemu-user-static
+          fi
+        else
+            echo "QEMU is not required for platform ${{ inputs.platform }}"
+        fi
+      shell: bash
     - name: Build snapshot id
       id: snapshot-id
       run: |
@@ -51,9 +82,6 @@ runs:
       run: |
         set -x
         echo Building  ${{ inputs.dist }} - ${{ inputs.platform }}
-        if [[ "${{ inputs.platform }}" == "arm64" ]]; then
-          sudo apt-get update -qq && sudo apt-get install -y qemu-user-static
-        fi
         sudo -E bash -x buildone "${{ inputs.dist }}" "${{ inputs.platform }}"
         if ${{ inputs.build_snapshot }} ; then
              sudo -E bash -x buildone_snapshot "${{ inputs.dist }}" "${{ steps.snapshot-id.outputs.snapshot-id }}" "${{ inputs.platform }}"
