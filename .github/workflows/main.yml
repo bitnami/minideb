@@ -1,13 +1,14 @@
 # This is a basic workflow to help you get started with Actions
 
 name: CI
-
+ 
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches:
       - master
+      - patch-1
   pull_request:
 
   # Allows you to run this workflow manually from the Actions tab
@@ -15,7 +16,7 @@ on:
   schedule:
     - cron:  '0 0 * * *'
 env:
-  BASENAME: bitnami/minideb
+  BASENAME: redstonewizard08/minideb
   LATEST: buster
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -63,11 +64,12 @@ jobs:
 
   build_multiarch:
     runs-on: ubuntu-20.04
-    needs: [ shellcheck ]
+    needs: [ shellcheck, build_jessie ]
     strategy:
+      fail-fast: false
       matrix:
         dist: [stretch, buster, bullseye]
-        arch: [amd64, arm64]
+        arch: [amd64, arm64, armhf]
 
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
     steps:

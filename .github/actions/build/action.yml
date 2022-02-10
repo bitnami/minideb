@@ -43,7 +43,7 @@ runs:
     - name: "Install QEMU"
       run: |
         set -x
-        if [[ "${{ inputs.platform }}" == "arm64" ]]; then
+        if [[ "${{ inputs.platform }}" == "arm64" ]] || [[ "${{ inputs.platform }}" == "armhf" ]]; then
           echo "Installing QEMU"
           # qemu-user-static fails with segfaults building bullseye
           # We will revisit this when 20.10 is allowed as build slave on GitHub Actions

@@ -15,7 +15,7 @@ $ docker run --rm -it bitnami/minideb:latest
 There are [tags](https://hub.docker.com/r/bitnami/minideb/tags/) for the different Debian releases.
 ```
 $ docker run --rm -it bitnami/minideb:stretch
-```
+``` 
 
 The images are built daily and have the security release enabled, so will contain any security updates released more than 24 hours ago.
 

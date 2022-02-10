@@ -14,7 +14,7 @@ DISTS_WITH_SNAPSHOT=${DISTS_WITH_SNAPSHOT:-buster}
 BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb
 QUAY_BASENAME=quay.io/bitnami/minideb
-PLATFORMS=${PLATFORMS:-amd64 arm64}
+PLATFORMS=${PLATFORMS:-amd64 arm64 armhf}
 DRY_RUN=${DRY_RUN:-}
 SNAPSHOT_ID=${SNAPSHOT_ID:-}
 read -r -a ARCHS <<<"$PLATFORMS"

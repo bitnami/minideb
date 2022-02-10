@@ -28,6 +28,16 @@ if [[ "$PLATFORM" == "arm64" ]]; then
         done
         docker_platform_args+=( --platform "linux/arm64" )
     fi
+elif [[ "$PLATFORM" == "armhf" ]]; then
+    if [[ "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ]]; then
+        echo "Running in arm host. QEMU is not needed"
+    else
+        echo "Setting up qemu static"
+        for qemu_static_file in /usr/bin/qemu-*-static; do
+            bind_mounts+=( -v="$qemu_static_file:$qemu_static_file" )
+        done
+        docker_platform_args+=( --platform "linux/arm/v7" )
+    fi
 fi
 
 function test_extra_args() {
@@ -45,7 +55,7 @@ test dpkg -l apt
 desc "Arch matches"
 if [[ "$PLATFORM" == "amd64" ]]; then
     test bash -c 'echo "$(uname -m)" && [[ "$(uname -m)" == *x86_64* ]]'
-elif [[ "$PLATFORM" == "arm64" ]]; then
+elif [[ "$PLATFORM" == "arm64" ]] || [[ "$PLATFORM" == "armhf" ]]; then
     test bash -c 'echo "$(uname -m)" && [[ "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ]]'
 else
     echo Unknown platform $PLATFORM >&2

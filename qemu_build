@@ -52,7 +52,7 @@ PLATFORM=${2:-amd64}
 DEBIAN_SNAPSHOT_ID=${3:-}
 
 make .installed-qemu
-mkdir -p .kvm-images/{amd64,arm64}
+mkdir -p .kvm-images/{amd64,arm64,armhf}
 
 if [[ ! -f .kvm-images/amd64/buster-server-cloudimg-amd64.qcow2 && "$PLATFORM" == "amd64" ]]; then
   curl -SL https://cdimage.debian.org/cdimage/openstack/current/debian-10-openstack-amd64.qcow2 > .kvm-images/amd64/buster-server-cloudimg-amd64.qcow2
@@ -61,6 +61,11 @@ fi
 if [[ ! -f .kvm-images/arm64/buster-server-cloudimg-arm64.qcow2 && "$PLATFORM" == "arm64" ]]; then
   curl -SL https://cdimage.debian.org/cdimage/openstack/current/debian-10-openstack-arm64.qcow2 > .kvm-images/arm64/buster-server-cloudimg-arm64.qcow2
   curl -SL https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd > .kvm-images/arm64/QEMU_EFI.fd
+fi
+
+if [[ ! -f .kvm-images/armhf/buster-server-cloudimg-armhf.qcow2 && "$PLATFORM" == "armhf" ]]; then
+  curl -SL https://cdimage.debian.org/cdimage/openstack/current/debian-10-openstack-armhf.qcow2 > .kvm-images/armhf/buster-server-cloudimg-armhf.qcow2
+  curl -SL https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd > .kvm-images/armhf/QEMU_EFI.fd
 fi
 
 IMAGE_FILE="build/$DIST/$PLATFORM/instance.qcow2"
@@ -118,6 +123,23 @@ arm64)
     -m 2G \
     -monitor telnet::45454,server,nowait \
     -bios .kvm-images/arm64/QEMU_EFI.fd  \
+    -drive "file=$IMAGE_FILE,format=qcow2" \
+    -drive "file=$pub_key_dir/user-data.img,format=raw" \
+    -vga none \
+    -nographic &
+  ;;
+armhf)
+  qemu-system-arm \
+    -accel tcg,thread=multi \
+    -machine virt \
+    -cpu cortex-a57 \
+    -device virtio-net,netdev=net0 \
+    -netdev user,id=net0,hostfwd=tcp::5555-:22 \
+    -boot c \
+    -pidfile "$PIDFILE" \
+    -m 2G \
+    -monitor telnet::45454,server,nowait \
+    -bios .kvm-images/armhf/QEMU_EFI.fd  \
     -drive "file=$IMAGE_FILE,format=qcow2" \
     -drive "file=$pub_key_dir/user-data.img,format=raw" \
     -vga none \

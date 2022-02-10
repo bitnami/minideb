@@ -6,7 +6,7 @@ set -e
 set -u
 set -o pipefail
 
-arch=${1:-"amd64 arm64"}
+arch=${1:-"amd64 arm64 armhf"}
 
 dist="jessie
 stretch
