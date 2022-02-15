@@ -47,6 +47,15 @@ The image points to the Debian archive, so you are free to install packages from
 
 In those cases you can figure out which package is needed and manually specify to install it along with your desired packages. Please feel free to submit an issue request so that we can reach out and help you quickly.
 
+# Security
+Minideb is based on Debian and relies on their security updates. The images are built daily and have the security release enabled, so will contain any security updates released more than 24 hours ago.
+
+Note that Debian [does not fix every CVE that affects their packages](https://www.debian.org/security/faq#cvedsa), which means that CVE scanners may detect unfixed vulnerabilities in Minideb images. In those cases, you can check the [Debian security tracker](https://security-tracker.debian.org/tracker/) to see whether Debian intends to release an update to fix it.
+
+In order to keep compatibility with Debian, we will not patch any vulnerabilities in Minideb directly. If Debian does not fix the CVE then it will also remain in Minideb. If you find a vulnerability that is fixed in Debian but not in the latest images of Minideb then please file an issue as that is not intentional.
+
+On [this page](https://docs.bitnami.com/kubernetes/open-cve-policy/), you can find more information about the Bitnami policy regarding CVEs. In the same way, if you find a security issue with how the Minideb images are built or published then please report it to us.
+
 # Building Minideb
 We provide a Makefile to help you build Minideb locally. It should be run on a Debian based machine and requires sudo privileges.
 ```
