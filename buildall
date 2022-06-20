@@ -11,7 +11,7 @@ arch=${1:-"amd64 arm64"}
 dist="buster
 bullseye
 "
-dist_with_snapshot="bullseye"
+dist_with_snapshot="buster"
 
 for a in $arch; do
   for i in $dist; do

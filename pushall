@@ -7,7 +7,7 @@ set -o pipefail
 DISTS="buster
 bullseye
 "
-DISTS_WITH_SNAPSHOT="bullseye"
+DISTS_WITH_SNAPSHOT="buster"
 LATEST=bullseye
 BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb
