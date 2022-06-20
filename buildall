@@ -8,18 +8,13 @@ set -o pipefail
 
 arch=${1:-"amd64 arm64"}
 
-dist="jessie
-stretch
-buster
+dist="buster
+bullseye
 "
-dist_with_snapshot="buster"
+dist_with_snapshot="bullseye"
 
 for a in $arch; do
   for i in $dist; do
-    if [[ "$a" != "amd64" && "$i" == "jessie" ]]; then
-      continue
-    fi
-
     ./buildone "$i" "$a"
   done
 done

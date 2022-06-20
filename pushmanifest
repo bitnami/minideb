@@ -4,13 +4,12 @@ set -e
 set -u
 set -o pipefail
 
-DISTS=${DISTS:-"stretch
-buster
+DISTS=${DISTS:-"buster
 bullseye
 latest
 "}
 
-DISTS_WITH_SNAPSHOT=${DISTS_WITH_SNAPSHOT:-buster}
+DISTS_WITH_SNAPSHOT=${DISTS_WITH_SNAPSHOT:-bullseye}
 BASENAME=bitnami/minideb
 GCR_BASENAME=gcr.io/bitnami-containers/minideb
 PLATFORMS=${PLATFORMS:-amd64 arm64}
