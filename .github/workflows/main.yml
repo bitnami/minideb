@@ -16,7 +16,7 @@ on:
     - cron:  '0 0 * * *'
 env:
   BASENAME: bitnami/minideb
-  LATEST: buster
+  LATEST: bullseye
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -35,38 +35,13 @@ jobs:
       - name: Verify scripts with shellcheck
         run: |
           bash shellcheck
-  build_jessie:
-    runs-on: ubuntu-20.04
-    needs: [ shellcheck ]
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
-      - name: Use local build action
-        uses: ./.github/actions/build
-        with:
-          dist: "jessie"
-          platform: "amd64"
-      - name: Push
-        if: github.ref == 'refs/heads/master'
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-          GCR_EMAIL: ${{ secrets.GCR_EMAIL }}
-          GCR_KEY: ${{ secrets.GCR_KEY }}
-          GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
-          DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
-          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
-        run: |
-          bash pushone jessie amd64
 
   build_multiarch:
     runs-on: ubuntu-20.04
     needs: [ shellcheck ]
     strategy:
       matrix:
-        dist: [stretch, buster, bullseye]
+        dist: [buster, bullseye]
         arch: [amd64, arm64]
 
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
@@ -104,7 +79,7 @@ jobs:
 
   deploy_manifests:
     runs-on: ubuntu-20.04
-    needs: [ build_multiarch, build_jessie ]
+    needs: [ build_multiarch ]
     if: github.ref == 'refs/heads/master'
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -120,5 +95,4 @@ jobs:
       - uses: actions/checkout@v2
       - name: Push Manifests
         run: |
-          DISTS="stretch buster bullseye latest" bash pushmanifest
-          DISTS=jessie PLATFORMS=amd64 bash pushmanifest
+          DISTS="buster bullseye latest" bash pushmanifest

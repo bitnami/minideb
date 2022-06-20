@@ -76,9 +76,6 @@ desc "Checking that the terminfo is valid when running with -t (#17)"
 echo "" | test_extra_args '-t' bash -c 'install_packages procps && top -d1 -n1 -b'
 
 MYSQL_PACKAGE=default-mysql-server
-if [[ "$DIST" == "jessie"* ]]; then
-    MYSQL_PACKAGE=mysql-server
-fi
 
 # See https://github.com/bitnami/minideb/issues/16
 desc "Check that we can install mysql-server (#16)"

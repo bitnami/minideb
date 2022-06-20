@@ -14,14 +14,14 @@ $ docker run --rm -it bitnami/minideb:latest
 
 There are [tags](https://hub.docker.com/r/bitnami/minideb/tags/) for the different Debian releases.
 ```
-$ docker run --rm -it bitnami/minideb:stretch
+$ docker run --rm -it bitnami/minideb:bullseye
 ```
 
 The images are built daily and have the security release enabled, so will contain any security updates released more than 24 hours ago.
 
 You can also use the images as a base for your own `Dockerfile`:
 ```
-FROM bitnami/minideb:stretch
+FROM bitnami/minideb:bullseye
 ```
 
 # Why use Minideb
@@ -62,28 +62,28 @@ We provide a Makefile to help you build Minideb locally. It should be run on a D
 $ sudo make
 ```
 
-To build an individual release (stretch, buster or unstable)
+To build an individual release (buster, bullseye or unstable)
 ```
-$ sudo make stretch
+$ sudo make bullseye
 ```
 
 To test the resulting image:
 ```
-$ sudo make test-stretch
+$ sudo make test-bullseye
 ```
 
 ## Building Minideb for foreign architecture
-Make commands shown above will build an image for the architecture you are currently working on.  
+Make commands shown above will build an image for the architecture you are currently working on.
 To build an image for a foreign architecture (for example to build a multiarch image), we provide a
 simple script which run a QEMU instance for the target architecture and build the image inside it.
 
-To build and test a buster image for arm64:
+To build and test a bullseye image for arm64:
 ```
-$ ./qemu_build buster arm64
+$ ./qemu_build bullseye arm64
 ```
 
 The image will be then imported locally through the docker cli with `$distribution-$architecture` tag
-(example: `bitnami/minideb:buster-arm64`)
+(example: `bitnami/minideb:bullseye-arm64`)
 
 Current limitations of `qemu_build` script:
 
