@@ -62,8 +62,6 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
           GCR_EMAIL: ${{ secrets.GCR_EMAIL }}
           GCR_KEY: ${{ secrets.GCR_KEY }}
           GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
@@ -74,7 +72,7 @@ jobs:
           if ${{ matrix.dist == env.LATEST }} ; then
              bash pushone "latest" "${{ matrix.arch }}"
           fi
-          if ${{ matrix.dist == env.LATEST }} ; then
+          if ${{ matrix.dist == env.DIST_WITH_SNAPSHOT }} ; then
              bash pushone "${{ matrix.dist }}-snapshot-${{ steps.build.outputs.snapshot-id }}" "${{ matrix.arch }}"
           fi
 
@@ -85,8 +83,6 @@ jobs:
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       GCR_EMAIL: ${{ secrets.GCR_EMAIL }}
       GCR_KEY: ${{ secrets.GCR_KEY }}
       GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
