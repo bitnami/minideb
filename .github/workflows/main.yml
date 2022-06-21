@@ -17,6 +17,7 @@ on:
 env:
   BASENAME: bitnami/minideb
   LATEST: bullseye
+  DIST_WITH_SNAPSHOT: buster
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -55,7 +56,7 @@ jobs:
           dist: "${{ matrix.dist }}"
           platform: "${{ matrix.arch }}"
           is_latest: ${{ matrix.dist == env.LATEST }}
-          build_snapshot: ${{ matrix.dist == env.LATEST }}
+          build_snapshot: ${{ matrix.dist == env.DIST_WITH_SNAPSHOT }}
       - name: Push
         if: github.ref == 'refs/heads/master'
         env:
