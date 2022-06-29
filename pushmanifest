@@ -11,7 +11,6 @@ latest
 
 DISTS_WITH_SNAPSHOT=${DISTS_WITH_SNAPSHOT:-buster}
 BASENAME=bitnami/minideb
-GCR_BASENAME=gcr.io/bitnami-containers/minideb
 PLATFORMS=${PLATFORMS:-amd64 arm64}
 DRY_RUN=${DRY_RUN:-}
 SNAPSHOT_ID=${SNAPSHOT_ID:-}
@@ -44,13 +43,6 @@ if [ -n "${DOCKER_PASSWORD:-}" ]; then
     echo "$DOCKER_PASSWORD" | run_docker login -u "$DOCKER_USERNAME" --password-stdin
 fi
 
-if [ -n "${GCR_KEY:-}" ]; then
-    gcloud auth activate-service-account "$GCR_EMAIL" --key-file <(echo "$GCR_KEY")
-    gcloud auth print-access-token | run_docker login -u oauth2accesstoken --password-stdin gcr.io
-elif [ -n "${GCR_TOKEN:-}" ]; then
-    echo "${GCR_TOKEN:-}" | run_docker login -u oauth2accesstoken --password-stdin gcr.io
-fi
-
 push_manifest() {
     local image=""
     local archs=""
@@ -74,12 +66,6 @@ for DIST in $DISTS; do
 done
 
 repositories=("$BASENAME")
-
-if [[ -n "${GCR_KEY:-}" || -n "${GCR_TOKEN:-}" ]]; then
-    repositories+=("$GCR_BASENAME")
-else
-    echo "Skipping repository gcr.io (empty password)"
-fi
 
 for tag in "${tags[@]}"; do
     for repo in "${repositories[@]}"; do

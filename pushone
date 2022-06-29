@@ -8,17 +8,9 @@ DIST=${1:?Specify the distrubution name}
 PLATFORM=${2:-amd64}
 
 BASENAME=bitnami/minideb
-GCR_BASENAME=gcr.io/bitnami-containers/minideb
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-fi
-
-if [ -n "${GCR_KEY:-}" ]; then
-    gcloud auth activate-service-account "$GCR_EMAIL" --key-file <(echo "$GCR_KEY")
-    gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin gcr.io
-elif [ -n "${GCR_TOKEN:-}" ]; then
-    echo "${GCR_TOKEN:-}" | docker login -u oauth2accesstoken --password-stdin gcr.io
 fi
 
 ENABLE_DOCKER_CONTENT_TRUST=0
@@ -34,10 +26,6 @@ fi
 push() {
     local dist="$1"
     DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${dist}"
-    docker push "${GCR_BASENAME}:${dist}"
 }
 
-docker tag "${BASENAME}:${DIST}-${PLATFORM}" "${GCR_BASENAME}:${DIST}-${PLATFORM}"
-
 push "$DIST-${PLATFORM}"
-
