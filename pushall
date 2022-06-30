@@ -10,14 +10,9 @@ bullseye
 DISTS_WITH_SNAPSHOT="buster"
 LATEST=bullseye
 BASENAME=bitnami/minideb
-GCR_BASENAME=gcr.io/bitnami-containers/minideb
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-fi
-
-if [ -n "${GCR_KEY:-}" ]; then
-    gcloud auth activate-service-account "$GCR_EMAIL" --key-file <(echo "$GCR_KEY")
 fi
 
 ENABLE_DOCKER_CONTENT_TRUST=0
@@ -33,11 +28,9 @@ fi
 push() {
     local dist="$1"
     DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${dist}"
-    gcloud docker -- push "${GCR_BASENAME}:${dist}"
 }
 
 for DIST in $DISTS; do
-    docker tag "${BASENAME}:${DIST}" "${GCR_BASENAME}:${DIST}"
     push "$DIST"
 done
 
@@ -46,14 +39,11 @@ if [ -f "build/snapshot_id" ]; then
 
     for DIST in $DISTS_WITH_SNAPSHOT; do
         TAG="${DIST}-snapshot-${snapshot_id}"
-
-        docker tag "${BASENAME}:${TAG}" "${GCR_BASENAME}:${TAG}"
         push "${TAG}"
     done
 fi
 
 docker tag "${BASENAME}:${LATEST}" "${BASENAME}:latest"
-docker tag "${GCR_BASENAME}:${LATEST}" "${GCR_BASENAME}:latest"
 
 push latest
 

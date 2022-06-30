@@ -62,9 +62,6 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          GCR_EMAIL: ${{ secrets.GCR_EMAIL }}
-          GCR_KEY: ${{ secrets.GCR_KEY }}
-          GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
           DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
           DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
         run: |
@@ -83,9 +80,6 @@ jobs:
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      GCR_EMAIL: ${{ secrets.GCR_EMAIL }}
-      GCR_KEY: ${{ secrets.GCR_KEY }}
-      GCR_TOKEN: ${{ secrets.GCR_TOKEN }}
       DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
       DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
     steps:
