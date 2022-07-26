@@ -40,7 +40,7 @@ FROM bitnami/minideb:bullseye
     ```
 
 # Adoption of Minideb
-The minideb container image is the base image for many Bitnami-maintained language runtimes including [php](https://github.com/bitnami/bitnami-docker-php-fpm), [nodejs](https://github.com/bitnami/bitnami-docker-node), [ruby](https://github.com/bitnami/bitnami-docker-ruby) and infrastructure components including [mariadb](https://github.com/bitnami/bitnami-docker-mariadb), [redis](https://github.com/bitnami/bitnami-docker-redis), [nginx](https://github.com/bitnami/bitnami-docker-nginx) and [mongodb](https://github.com/bitnami/bitnami-docker-mongodb).
+The minideb container image is the base image for many Bitnami-maintained language runtimes including [php](https://github.com/bitnami/containers/tree/main/bitnami/php-fpm), [nodejs](https://github.com/bitnami/containers/tree/main/bitnami/node), [ruby](https://github.com/bitnami/containers/tree/main/bitnami/ruby) and infrastructure components including [mariadb](https://github.com/bitnami/containers/tree/main/bitnami/mariadb), [redis](https://github.com/bitnami/containers/tree/main/bitnami/redis), [nginx](https://github.com/bitnami/containers/tree/main/bitnami/nginx) and [mongodb](https://github.com/bitnami/containers/tree/main/bitnami/mongodb).
 
 # Compatibility
 The image points to the Debian archive, so you are free to install packages from there that you need. However because some `Essential` packages have been removed they may not always install or work correctly.
