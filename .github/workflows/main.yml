@@ -23,7 +23,7 @@ jobs:
   # This workflow contains a single job called "build"
   shellcheck:
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: Shellcheck
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -38,7 +38,7 @@ jobs:
           bash shellcheck
 
   build_multiarch:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [ shellcheck ]
     strategy:
       matrix:
@@ -74,7 +74,7 @@ jobs:
           fi
 
   deploy_manifests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [ build_multiarch ]
     if: github.ref == 'refs/heads/master'
     env:
