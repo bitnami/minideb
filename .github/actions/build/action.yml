@@ -31,10 +31,6 @@ runs:
         set -x
         if [[ "${{ inputs.platform }}" == "arm64" ]]; then
           echo "Installing QEMU"
-          # qemu-user-static fails with segfaults building bullseye
-          # We will revisit this when 20.10 is allowed as build slave on GitHub Actions
-          # https://bugs.launchpad.net/qemu/+bug/1749393
-          # https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/1928075
           sudo apt-get update -qq && sudo apt-get install -y qemu-user-static
         else
             echo "QEMU is not required for platform ${{ inputs.platform }}"
