@@ -35,24 +35,7 @@ runs:
           # We will revisit this when 20.10 is allowed as build slave on GitHub Actions
           # https://bugs.launchpad.net/qemu/+bug/1749393
           # https://bugs.launchpad.net/ubuntu/+source/qemu/+bug/1928075
-          if [[ "${{ inputs.dist }}" == "bullseye" ]]; then
-            sudo tee /etc/apt/preferences.d/qemu <<EOF
-        Package: *
-        Pin: release n=focal
-        Pin-Priority: 900
-        Package: *
-        Pin: release n=hirsute
-        Pin-Priority: 400
-        EOF
-            sudo tee /etc/apt/sources.list.d/hirsute.list <<EOF
-        deb http://archive.ubuntu.com/ubuntu hirsute universe
-        deb http://archive.ubuntu.com/ubuntu hirsute-updates universe
-        deb http://security.ubuntu.com/ubuntu hirsute-security universe
-        EOF
-            sudo apt-get update -qq && sudo apt-get install -y -t hirsute qemu-user-static
-          else
-            sudo apt-get update -qq && sudo apt-get install -y qemu-user-static
-          fi
+          sudo apt-get update -qq && sudo apt-get install -y qemu-user-static
         else
             echo "QEMU is not required for platform ${{ inputs.platform }}"
         fi
