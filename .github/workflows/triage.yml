@@ -1,0 +1,33 @@
+# This workflow is built to manage the triage support by using GH issues.
+name: '[Support] Organize triage'
+on:
+  issues:
+    types:
+      - reopened
+      - opened
+  pull_request_target:
+    types:
+      - reopened
+      - opened
+permissions:
+  repository-projects: write
+  issues: write
+
+# To fix the concurrency when for example more than one label is added
+concurrency:
+  group: ${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  # For any opened or reopened issue, should be sent into Triage
+  send_to_board:
+    if: ${{ github.actor != 'bitnami-bot' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign to a person to work on it
+        uses: pozil/auto-assign-issue@v1.9.0
+        with:
+          numOfAssignee: 1
+          removePreviousAssignees: false
+          teams: "containers-triage"
+          repo-token: "${{ secrets.BITNAMI_BOT_TOKEN }}"
