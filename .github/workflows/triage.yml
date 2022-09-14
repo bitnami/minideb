@@ -10,17 +10,11 @@ on:
       - reopened
       - opened
 permissions:
-  repository-projects: write
   issues: write
 
-# To fix the concurrency when for example more than one label is added
-concurrency:
-  group: ${{ github.run_id }}
-  cancel-in-progress: false
-
 jobs:
-  # For any opened or reopened issue, should be sent into Triage
-  send_to_board:
+  # For any opened or reopened issue, should be assign to a team member
+  team_assignation:
     if: ${{ github.actor != 'bitnami-bot' }}
     runs-on: ubuntu-latest
     steps:
