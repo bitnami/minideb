@@ -8,7 +8,6 @@ ROOT=$(cd "$(dirname "$0")" && pwd)
 TARGET=${1:?Specify the target filename}
 DIST=${2:-stable}
 PLATFORM=${3:-$(dpkg --print-architecture)}
-SNAPSHOT_ID=${4:-}
 
 LOGFILE=${TARGET}.log
 
@@ -77,11 +76,6 @@ rootfs_chroot bash debootstrap/debootstrap --second-stage
 
 repo_url="http://deb.debian.org/debian"
 sec_repo_url="http://security.debian.org/"
-
-if [ -n "$SNAPSHOT_ID" ]; then
-	repo_url="http://snapshot.debian.org/archive/debian/${SNAPSHOT_ID}/"
-	sec_repo_url="http://snapshot.debian.org/archive/debian-security/${SNAPSHOT_ID}/"
-fi
 
 echo -e "deb ${repo_url} $DIST main" > "$rootfsDir/etc/apt/sources.list"
 if [ "$DIST" == "bullseye" ]; then

@@ -49,7 +49,6 @@ fi
 
 DIST=$1
 PLATFORM=${2:-amd64}
-DEBIAN_SNAPSHOT_ID=${3:-}
 
 make .installed-qemu
 mkdir -p .kvm-images/{amd64,arm64}
@@ -145,7 +144,7 @@ do_ssh "apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.
 rsync -avz -e "ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p 5555 -i $pub_key_dir/id_rsa" --exclude ".git" --exclude ".installed-requirements" --exclude ".kvm-images" --exclude "build" --exclude "ssh" ./ "root@localhost:/build/."
 do_ssh "cd /build/ && make .installed-requirements"
 
-do_ssh "cd /build/ && ./buildone \"$DIST\" \"$PLATFORM\" \"$DEBIAN_SNAPSHOT_ID\""
+do_ssh "cd /build/ && ./buildone \"$DIST\" \"$PLATFORM\""
 rsync -avz -e "ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p 5555 -i $pub_key_dir/id_rsa" "root@localhost:/build/build/$DIST.tar" "./$TARGET_FILE"
 
 current_ts="$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"

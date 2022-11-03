@@ -9,11 +9,9 @@ bullseye
 latest
 "}
 
-DISTS_WITH_SNAPSHOT=${DISTS_WITH_SNAPSHOT:-buster}
 BASENAME=bitnami/minideb
 PLATFORMS=${PLATFORMS:-amd64 arm64}
 DRY_RUN=${DRY_RUN:-}
-SNAPSHOT_ID=${SNAPSHOT_ID:-}
 read -r -a ARCHS <<<"$PLATFORMS"
 
 run_docker() {
@@ -60,9 +58,6 @@ tags=()
 
 for DIST in $DISTS; do
     tags+=("$DIST")
-    if list_includes "$DISTS_WITH_SNAPSHOT" "$DIST" ; then
-        tags+=("$DIST-snapshot-${SNAPSHOT_ID:-$(./snapshot_id)}")
-    fi
 done
 
 repositories=("$BASENAME")

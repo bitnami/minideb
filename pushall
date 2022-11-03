@@ -7,7 +7,6 @@ set -o pipefail
 DISTS="buster
 bullseye
 "
-DISTS_WITH_SNAPSHOT="buster"
 LATEST=bullseye
 BASENAME=bitnami/minideb
 
@@ -33,15 +32,6 @@ push() {
 for DIST in $DISTS; do
     push "$DIST"
 done
-
-if [ -f "build/snapshot_id" ]; then
-    snapshot_id=$(cat build/snapshot_id)
-
-    for DIST in $DISTS_WITH_SNAPSHOT; do
-        TAG="${DIST}-snapshot-${snapshot_id}"
-        push "${TAG}"
-    done
-fi
 
 docker tag "${BASENAME}:${LATEST}" "${BASENAME}:latest"
 
