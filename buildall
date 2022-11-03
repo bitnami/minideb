@@ -11,22 +11,9 @@ arch=${1:-"amd64 arm64"}
 dist="buster
 bullseye
 "
-dist_with_snapshot="buster"
-
 for a in $arch; do
   for i in $dist; do
     ./buildone "$i" "$a"
   done
 done
 
-snapshot_id=$(./snapshot_id)
-if [ -n "$snapshot_id" ]; then
-  for a in $arch; do
-    for i in $dist_with_snapshot; do
-        ./buildone_snapshot "$i" "$snapshot_id" "$a"
-    done
-
-    mkdir -p "build/$a"
-    echo "$snapshot_id" > "build/$a/snapshot_id"
-  done
-fi
