@@ -24,6 +24,7 @@ get_latest_debian_snapshot_id() {
     local -r snapshot_list_tmp_file="${snapshot_tmp_dir}/month-snapshots.html"
 
     ! month_query=$(get_latest_month_query) && return 1
+    month_query=${month_query/&amp;month=/&month=}
 
     curl -sSfL "https://snapshot.debian.org/archive/debian/$month_query" > "$snapshot_list_tmp_file"
 
