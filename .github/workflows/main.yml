@@ -39,6 +39,7 @@ jobs:
   build_multiarch:
     runs-on: ubuntu-22.04
     needs: [ shellcheck ]
+    if: github.ref == 'refs/heads/master'
     strategy:
       matrix:
         dist: [buster, bullseye]
@@ -91,7 +92,7 @@ jobs:
     name: Notify unsuccessful CI run
     steps:
       - name: Notify in Slack channel
-        if: ${{ needs.build_multiarch.result != 'success' || needs.deploy_manifests.result != 'success' }}
+        if: always()
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: C04E3CL1WP7
