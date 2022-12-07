@@ -82,3 +82,43 @@ jobs:
       - name: Push Manifests
         run: |
           DISTS="buster bullseye latest" bash pushmanifest
+
+  # If the CI Pipeline does not succeed we should notify the interested agents
+  slack-notif:
+    runs-on: ubuntu-22.04
+    needs: [ build_multiarch, deploy_manifests ]
+    if: always()
+    name: Notify unsuccessful CI run
+    steps:
+      - name: Notify in Slack channel
+        if: ${{ needs.build_multiarch.result != 'success' || needs.deploy_manifests.result != 'success' }}
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.CD_SLACK_CHANNEL_ID }}
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "#CC0000",
+                  "fallback": "Unsuccessful bitnami/minideb CI pipeline",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "*Unsuccessful `bitnami/minideb` CI pipeline*"
+                      }
+                    },
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "The CI pipeline for <${{ github.event.head_commit.url }}|bitnami/minideb@${{ github.event.head_commit.id }}> did not succeed. Check the related <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|action run> for more information."
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.CD_SLACK_BOT_TOKEN }}
