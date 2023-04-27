@@ -93,7 +93,7 @@ jobs:
     name: Notify unsuccessful CI run
     steps:
       - name: Notify in Slack channel
-        if: ${{ needs.build_multiarch.result != 'success' || needs.deploy_manifests.result != 'success' }}
+        if: ${{ needs.build_multiarch.result == 'failure' || needs.deploy_manifests.result == 'failure' }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
           payload: |
@@ -117,5 +117,5 @@ jobs:
               ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.TEST_CI_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
