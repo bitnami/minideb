@@ -111,7 +111,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "The CI pipeline for <${{ github.event.head_commit.url }}|bitnami/minideb@${{ github.event.head_commit.id }}> did not succeed. Check the related <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|action run> for more information."
+                    "text": "The CI pipeline for `bitnami/minideb` did not succeed. Check the related <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|action run> for more information."
                   }
                 }
               ]
