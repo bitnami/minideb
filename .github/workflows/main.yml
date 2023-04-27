@@ -96,7 +96,6 @@ jobs:
         if: ${{ needs.build_multiarch.result != 'success' || needs.deploy_manifests.result != 'success' }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          channel-id: ${{ secrets.CI_SLACK_CHANNEL_ID }}
           payload: |
             {
               "attachments": [
@@ -123,4 +122,4 @@ jobs:
               ]
             }
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.CI_SLACK_BOT_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URLs }}
