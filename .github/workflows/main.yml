@@ -97,27 +97,25 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         with:
           payload: |
-          {
-            "text": "*Unsuccessful `bitnami/minideb` CI pipeline*",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "*Unsuccessful `bitnami/minideb` CI pipeline*"
+            {
+              "text": "*Unsuccessful `bitnami/minideb` CI pipeline*",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Unsuccessful `bitnami/minideb` CI pipeline*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The CI pipeline for <${{ github.event.head_commit.url }}|bitnami/minideb@${{ github.event.head_commit.id }}> did not succeed. Check the related <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|action run> for more information."
+                  }
                 }
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "The CI pipeline for <${{ github.event.head_commit.url }}|bitnami/minideb@${{ github.event.head_commit.id }}> did not succeed. Check the related <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|action run> for more information."
-                }
-              }
-            ]
-          }
-
-
+              ]
+            }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.TEST_CI_SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
