@@ -94,7 +94,7 @@ Current limitations of `qemu_build` script:
 We'd love for you to contribute to this image. You can request new features by creating an [issue](https://github.com/bitnami/minideb/issues), or submit a [pull request](https://github.com/bitnami/minideb/pulls) with your contribution.
 
 # License
-Copyright &copy; 2023 Bitnami
+Copyright &copy; 2023 VMware Inc
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
