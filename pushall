@@ -6,8 +6,9 @@ set -o pipefail
 
 DISTS="buster
 bullseye
+bookworm
 "
-LATEST=bullseye
+LATEST=bookworm
 BASENAME=bitnami/minideb
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then

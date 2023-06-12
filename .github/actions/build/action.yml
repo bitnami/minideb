@@ -1,7 +1,7 @@
 inputs:
   dist:
     description: 'Dist to build'
-    default: 'bullseye'
+    default: 'bookworm'
   platform:
     description: 'Platform to build'
     default: 'amd64'
