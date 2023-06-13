@@ -22,10 +22,6 @@ cp -a "${ROOT}/debootstrap/"* "${DEBOOTSTRAP_DIR}/scripts"
 
 KEYRING=$DEBOOTSTRAP_DIR/debian-archive-keyring.gpg
 
-if [ -f "${ROOT}/keys/${DIST}.gpg" ]; then
-    gpg --no-default-keyring --keyring "$KEYRING" --import "${ROOT}/keys/${DIST}.gpg"
-fi
-
 use_qemu_static() {
     [[ "$PLATFORM" == "arm64" && ! ( "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ) ]]
 }
