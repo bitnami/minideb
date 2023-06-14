@@ -22,10 +22,6 @@ cp -a "${ROOT}/debootstrap/"* "${DEBOOTSTRAP_DIR}/scripts"
 
 KEYRING=$DEBOOTSTRAP_DIR/debian-archive-keyring.gpg
 
-if [ -f "${ROOT}/keys/${DIST}.gpg" ]; then
-    gpg --no-default-keyring --keyring "$KEYRING" --import "${ROOT}/keys/${DIST}.gpg"
-fi
-
 use_qemu_static() {
     [[ "$PLATFORM" == "arm64" && ! ( "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ) ]]
 }
@@ -75,13 +71,13 @@ fi
 rootfs_chroot bash debootstrap/debootstrap --second-stage
 
 repo_url="http://deb.debian.org/debian"
-sec_repo_url="http://security.debian.org/"
+sec_repo_url="http://security.debian.org/debian-security"
 
 echo -e "deb ${repo_url} $DIST main" > "$rootfsDir/etc/apt/sources.list"
 if [ "$DIST" == "bullseye" ] || [ "$DIST" == "bookworm" ]; then
     echo "deb ${repo_url} $DIST-updates main" >> "$rootfsDir/etc/apt/sources.list"
     echo "deb ${sec_repo_url} $DIST-security main" >> "$rootfsDir/etc/apt/sources.list"
-elif [ "$DIST" != "unstable" ]; then
+elif [ "$DIST" == "buster" ]; then
     echo "deb ${sec_repo_url} $DIST/updates main" >> "$rootfsDir/etc/apt/sources.list"
 fi
 
