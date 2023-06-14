@@ -10,6 +10,7 @@ arch=${1:-"amd64 arm64"}
 
 dist="buster
 bullseye
+bookworm
 "
 for a in $arch; do
   for i in $dist; do
