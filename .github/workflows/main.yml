@@ -23,6 +23,7 @@ jobs:
   shellcheck:
     # The type of runner that the job will run on
     runs-on: ubuntu-22.04
+    if: github.event_name != 'schedule' || github.repository == 'bitnami/minideb'
     name: Shellcheck
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
