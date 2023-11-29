@@ -10,6 +10,9 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+# Avoid concurrency over the same issue
+concurrency:
+  group: card-movement-${{ github.event.issue.number }}
 jobs:
   call-comments-workflow:
     uses: bitnami/support/.github/workflows/comment-created.yml@main
