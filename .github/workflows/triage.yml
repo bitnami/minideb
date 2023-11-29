@@ -1,3 +1,6 @@
+# Copyright VMware, Inc.
+# SPDX-License-Identifier: APACHE-2.0
+
 # This workflow is built to manage the triage support by using GH issues.
 name: '[Support] Organize triage'
 on:
@@ -10,18 +13,10 @@ on:
       - reopened
       - opened
 permissions:
+  contents: read
+  pull-requests: write
   issues: write
-
 jobs:
-  # For any opened or reopened issue, should be assign to a team member
-  team_assignation:
-    if: ${{ github.actor != 'bitnami-bot' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Assign to a person to work on it
-        uses: pozil/auto-assign-issue@v1.9.0
-        with:
-          numOfAssignee: 1
-          removePreviousAssignees: false
-          teams: "containers-triage"
-          repo-token: "${{ secrets.BITNAMI_BOT_TOKEN }}"
+  call-triage-workflow:
+    uses: bitnami/support/.github/workflows/item-opened.yml@main
+    secrets: inherit
