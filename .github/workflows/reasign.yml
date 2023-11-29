@@ -3,7 +3,7 @@
 
 name: '[Support] Review based card movements'
 on:
-  pull_request:
+  pull_request_target:
     types:
       - labeled
   issues:
@@ -13,6 +13,9 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+# Avoid concurrency over the same issue
+concurrency:
+  group: card-movement-${{ github.event.issue != null && github.event.issue.number || github.event.number }}
 jobs:
   call-reasign-workflow:
     uses: bitnami/support/.github/workflows/item-labeled.yml@main
