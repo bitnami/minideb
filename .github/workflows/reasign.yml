@@ -1,0 +1,19 @@
+# Copyright VMware, Inc.
+# SPDX-License-Identifier: APACHE-2.0
+
+name: '[Support] Review based card movements'
+on:
+  pull_request:
+    types:
+      - labeled
+  issues:
+    types:
+      - labeled
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+jobs:
+  call-reasign-workflow:
+    uses: bitnami/support/.github/workflows/item-labeled.yml@main
+    secrets: inherit

@@ -1,0 +1,15 @@
+# Copyright VMware, Inc.
+# SPDX-License-Identifier: APACHE-2.0
+
+name: '[Support] Review based card movements'
+on:
+  pull_request_target:
+    types:
+      - review_requested
+      - synchronize
+permissions:
+  contents: read
+jobs:
+  call-pr-review-workflow:
+    uses: bitnami/support/.github/workflows/pr-review-requested-sync.yml@main
+    secrets: inherit
