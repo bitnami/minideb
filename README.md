@@ -1,7 +1,15 @@
-minideb
-=======
+<p align="center">
+    <img width="400px" height=auto src="https://bitnami.com/downloads/logos/bitnami-by-vmware.png" />
+</p>
 
-[![CI](https://github.com/bitnami/minideb/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/bitnami/minideb/actions/workflows/main.yml)
+<p align="center">
+    <a href="https://github.com/bitnami/minideb/actions/workflows/main.yml"><img src="https://github.com/bitnami/minideb/actions/workflows/main.yml/badge.svg?branch=master" /></a>
+    <a href="https://hub.docker.com/r/bitnami/minideb/"><img src="https://badgen.net/docker/pulls/bitnami/minideb?icon=docker&label=pulls" /></a>
+    <a href="https://hub.docker.com/r/bitnami/minideb/"><img src="https://badgen.net/docker/stars/bitnami/minideb?icon=docker&label=stars" /></a>
+    <a href="https://github.com/bitnami/minideb"><img src="https://badgen.net/github/forks/bitnami/minideb?icon=github&color=grey" /></a>
+    <a href="https://github.com/bitnami/minideb"><img src="https://badgen.net/github/stars/bitnami/minideb?icon=github&color=grey" /></a>
+    <a href="https://twitter.com/bitnami"><img src="https://badgen.net/badge/twitter/@bitnami/1DA1F2?icon&label" /></a>
+</p>
 
 # What is Minideb
 A minimalist Debian-based image built specifically to be used as a base image for containers.
