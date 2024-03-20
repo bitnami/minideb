@@ -56,7 +56,7 @@ jobs:
           platform: "${{ matrix.arch }}"
           is_latest: ${{ matrix.dist == env.LATEST }}
       - name: Push
-        if: github.ref == 'refs/heads/master'
+        if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -71,7 +71,7 @@ jobs:
   deploy_manifests:
     runs-on: ubuntu-22.04
     needs: [ build_multiarch ]
-    if: github.ref == 'refs/heads/master'
+    if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -89,7 +89,7 @@ jobs:
     needs:
       - build_multiarch
       - deploy_manifests
-    if: always()
+    if: github.repository == 'bitnami/minideb'
     name: Notify unsuccessful CI run
     steps:
       - name: Notify in Slack channel
