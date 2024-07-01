@@ -81,8 +81,6 @@ if [ "$DIST" == "bookworm" ]; then
 elif [ "$DIST" == "bullseye" ]; then
     echo "deb ${repo_url} $DIST-updates main" >> "$rootfsDir/etc/apt/sources.list"
     echo "deb ${sec_repo_url_2} $DIST-security main" >> "$rootfsDir/etc/apt/sources.list"
-elif [ "$DIST" == "buster" ]; then
-    echo "deb ${sec_repo_url_2} $DIST/updates main" >> "$rootfsDir/etc/apt/sources.list"
 fi
 
 rootfs_chroot apt-get update

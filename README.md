@@ -70,7 +70,7 @@ We provide a Makefile to help you build Minideb locally. It should be run on a D
 $ sudo make
 ```
 
-To build an individual release (buster, bullseye, or bookworm)
+To build an individual release (bullseye or bookworm)
 ```
 $ sudo make bookworm
 ```

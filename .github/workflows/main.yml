@@ -41,7 +41,7 @@ jobs:
     needs: [ shellcheck ]
     strategy:
       matrix:
-        dist: [buster, bullseye, bookworm]
+        dist: [bullseye, bookworm]
         arch: [amd64, arm64]
 
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Push Manifests
         run: |
-          DISTS="buster bullseye bookworm latest" bash pushmanifest
+          DISTS="bullseye bookworm latest" bash pushmanifest
 
   # If the CI Pipeline does not succeed we should notify the interested agents
   slack-notif:
