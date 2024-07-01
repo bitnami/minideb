@@ -4,8 +4,7 @@ set -e
 set -u
 set -o pipefail
 
-DISTS="buster
-bullseye
+DISTS="bullseye
 bookworm
 "
 LATEST=bookworm
