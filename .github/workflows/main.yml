@@ -85,38 +85,15 @@ jobs:
           DISTS="bullseye bookworm latest" bash pushmanifest
 
   # If the CI Pipeline does not succeed we should notify the interested agents
-  slack-notif:
-    runs-on: ubuntu-22.04
+  notify:
+    name: Send notification
     needs:
       - build_multiarch
       - deploy_manifests
-    if: github.repository == 'bitnami/minideb'
-    name: Notify unsuccessful CI run
-    steps:
-      - name: Notify in Slack channel
-        if: ${{ needs.build_multiarch.result == 'failure' || needs.deploy_manifests.result == 'failure' }}
-        uses: slackapi/slack-github-action@v2.0.0
-        with:
-          payload: |
-            {
-              "text": "*Unsuccessful `bitnami/minideb` CI pipeline*",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Unsuccessful `bitnami/minideb` CI pipeline*"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "The CI pipeline for `bitnami/minideb` did not succeed. Check the related <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|action run> for more information."
-                  }
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+    if: ${{ always() && github.repository == 'bitnami/minideb' && (needs.build_multiarch.result == 'failure' || needs.deploy_manifests.result == 'failure') }}
+    uses: bitnami/support/.github/workflows/gchat-notification.yml@main
+    with:
+      workflow: ${{ github.workflow }}
+      job-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    secrets:
+      webhook-url: ${{ secrets.GCHAT_CONTENT_ALERTS_WEBHOOK_URL }}
