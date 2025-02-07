@@ -14,6 +14,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron:  '0 0 * * *'
+# Remove all permissions by default
+permissions: {}
 env:
   BASENAME: bitnami/minideb
   LATEST: bookworm
@@ -36,7 +38,6 @@ jobs:
       - name: Verify scripts with shellcheck
         run: |
           bash shellcheck
-
   build_multiarch:
     runs-on: ubuntu-22.04
     needs: [ shellcheck ]
@@ -44,7 +45,6 @@ jobs:
       matrix:
         dist: [bullseye, bookworm]
         arch: [amd64, arm64]
-
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
     steps:
       - name: Check out repository
@@ -68,7 +68,6 @@ jobs:
           if ${{ matrix.dist == env.LATEST }} ; then
              bash pushone "latest" "${{ matrix.arch }}"
           fi
-
   deploy_manifests:
     runs-on: ubuntu-22.04
     needs: [ build_multiarch ]
@@ -83,7 +82,6 @@ jobs:
       - name: Push Manifests
         run: |
           DISTS="bullseye bookworm latest" bash pushmanifest
-
   # If the CI Pipeline does not succeed we should notify the interested agents
   notify:
     name: Send notification
