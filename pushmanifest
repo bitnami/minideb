@@ -10,6 +10,7 @@ latest
 "}
 
 BASENAME=bitnami/minideb
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-"docker.io"}
 PLATFORMS=${PLATFORMS:-amd64 arm64}
 DRY_RUN=${DRY_RUN:-}
 read -r -a ARCHS <<<"$PLATFORMS"
@@ -38,7 +39,7 @@ list_includes() {
 }
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
-    echo "$DOCKER_PASSWORD" | run_docker login -u "$DOCKER_USERNAME" --password-stdin
+    echo "$DOCKER_PASSWORD" | run_docker login -u "$DOCKER_USERNAME" --password-stdin "${DOCKER_REGISTRY}"
 fi
 
 push_manifest() {
@@ -60,7 +61,7 @@ for DIST in $DISTS; do
     tags+=("$DIST")
 done
 
-repositories=("$BASENAME")
+repositories=("${DOCKER_REGISTRY}/${BASENAME}")
 
 for tag in "${tags[@]}"; do
     for repo in "${repositories[@]}"; do
