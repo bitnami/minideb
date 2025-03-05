@@ -71,7 +71,7 @@ jobs:
           DOCKER_USERNAME: AWS
           DOCKER_REGISTRY: public.ecr.aws
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_PUBLIC_GALLERY_KEY_ID }}
-          AWS_ACCESS_SECRET_KEY: ${{ secrets.AWS_PUBLIC_GALLERY_SECRET_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_PUBLIC_GALLERY_SECRET_KEY }}
         run: |
           # AWS login
           export DOCKER_PASSWORD="$(aws ecr-public get-login-password --region us-east-1)"
@@ -98,7 +98,7 @@ jobs:
           DOCKER_USERNAME: AWS
           DOCKER_REGISTRY: public.ecr.aws
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_PUBLIC_GALLERY_KEY_ID }}
-          AWS_ACCESS_SECRET_KEY: ${{ secrets.AWS_PUBLIC_GALLERY_SECRET_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_PUBLIC_GALLERY_SECRET_KEY }}
         run: |
           # AWS login
           export DOCKER_PASSWORD="$(aws ecr-public get-login-password --region us-east-1)"
