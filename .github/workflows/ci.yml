@@ -1,0 +1,47 @@
+name: CI
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on pull request events
+  pull_request:
+# Remove all permissions by default
+permissions: {}
+env:
+  BASENAME: bitnami/minideb
+  LATEST: bookworm
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  shellcheck:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+    name: Shellcheck
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install Dependencies
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get install -y shellcheck
+      - name: Verify scripts with shellcheck
+        run: |
+          bash shellcheck
+  build_multiarch:
+    runs-on: ubuntu-22.04
+    needs: [ shellcheck ]
+    strategy:
+      matrix:
+        dist: [bullseye, bookworm]
+        arch: [amd64, arm64]
+    name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Use local build action
+        id: build
+        uses: ./.github/actions/build
+        with:
+          dist: "${{ matrix.dist }}"
+          platform: "${{ matrix.arch }}"
+          is_latest: ${{ matrix.dist == env.LATEST }}

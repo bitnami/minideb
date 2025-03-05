@@ -10,6 +10,7 @@ latest
 "}
 
 BASENAME=bitnami/minideb
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-"docker.io"}
 PLATFORMS=${PLATFORMS:-amd64 arm64}
 DRY_RUN=${DRY_RUN:-}
 read -r -a ARCHS <<<"$PLATFORMS"
@@ -18,7 +19,8 @@ run_docker() {
     if [[ -n "${DRY_RUN:-}" ]]; then
         echo "DRY RUN docker ${*}"
     else
-        docker "$@"
+#        docker "$@"
+        beep
     fi
 }
 
@@ -60,7 +62,7 @@ for DIST in $DISTS; do
     tags+=("$DIST")
 done
 
-repositories=("$BASENAME")
+repositories=("${DOCKER_REGISTRY}/${BASENAME}")
 
 for tag in "${tags[@]}"; do
     for repo in "${repositories[@]}"; do

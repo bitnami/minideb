@@ -1,15 +1,11 @@
-# This is a basic workflow to help you get started with Actions
-
-name: CI
+name: CD
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+  # Triggers the workflow on push on the master branch
   push:
     branches:
       - master
-  pull_request:
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   schedule:
@@ -30,7 +26,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Install Dependencies
         run: |
           sudo apt-get -qq update
@@ -48,7 +44,7 @@ jobs:
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Use local build action
         id: build
         uses: ./.github/actions/build
@@ -56,14 +52,29 @@ jobs:
           dist: "${{ matrix.dist }}"
           platform: "${{ matrix.arch }}"
           is_latest: ${{ matrix.dist == env.LATEST }}
-      - name: Push
+      - name: Push to DockerHUB
         if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_REGISTRY: docker.io
           DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
           DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
         run: |
+          bash pushone "${{ matrix.dist }}" "${{ matrix.arch }}"
+          if ${{ matrix.dist == env.LATEST }} ; then
+             bash pushone "latest" "${{ matrix.arch }}"
+          fi
+      - name: Push to AWS
+        if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
+        env:
+          DOCKER_USERNAME: AWS
+          DOCKER_REGISTRY: public.ecr.aws
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_PUBLIC_GALLERY_KEY_ID }}
+          AWS_ACCESS_SECRET_KEY: ${{ secrets.AWS_PUBLIC_GALLERY_SECRET_KEY }}
+        run: |
+          # AWS login
+          export DOCKER_PASSWORD="$(aws ecr-public get-login-password --region us-east-1)"
           bash pushone "${{ matrix.dist }}" "${{ matrix.arch }}"
           if ${{ matrix.dist == env.LATEST }} ; then
              bash pushone "latest" "${{ matrix.arch }}"
@@ -72,15 +83,27 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [ build_multiarch ]
     if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
-    env:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
-      DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Push Manifests
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Push Manifests to DockerHUB
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_REGISTRY: docker.io
+          DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
         run: |
+          DISTS="bullseye bookworm latest" bash pushmanifest
+      - name: Push Manifests to AWS
+        env:
+          DOCKER_USERNAME: AWS
+          DOCKER_REGISTRY: public.ecr.aws
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_PUBLIC_GALLERY_KEY_ID }}
+          AWS_ACCESS_SECRET_KEY: ${{ secrets.AWS_PUBLIC_GALLERY_SECRET_KEY }}
+        run: |
+          # AWS login
+          export DOCKER_PASSWORD="$(aws ecr-public get-login-password --region us-east-1)"
           DISTS="bullseye bookworm latest" bash pushmanifest
   # If the CI Pipeline does not succeed we should notify the interested agents
   notify:

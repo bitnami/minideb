@@ -8,9 +8,10 @@ DIST=${1:?Specify the distrubution name}
 PLATFORM=${2:-amd64}
 
 BASENAME=bitnami/minideb
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-"docker.io"}
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
-    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin "${DOCKER_REGISTRY}"
 fi
 
 ENABLE_DOCKER_CONTENT_TRUST=0
@@ -25,7 +26,8 @@ fi
 
 push() {
     local dist="$1"
-    DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${dist}"
+    docker tag "${BASENAME}:${dist}" "${DOCKER_REGISTRY}/${BASENAME}:${dist}"
+    DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${DOCKER_REGISTRY}/${BASENAME}:${dist}"
 }
 
 push "$DIST-${PLATFORM}"
