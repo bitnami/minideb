@@ -71,9 +71,9 @@ fi
 
 rootfs_chroot bash debootstrap/debootstrap --second-stage
 
-repo_url="http://deb.debian.org/debian"
+repo_url="https://deb.debian.org/debian"
 sec_repo_url_1="${repo_url}-security"
-sec_repo_url_2="http://security.debian.org/debian-security"
+sec_repo_url_2="https://security.debian.org/debian-security"
 
 echo -e "deb ${repo_url} $DIST main" > "$rootfsDir/etc/apt/sources.list"
 if [ "$DIST" == "bookworm" ]; then
