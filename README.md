@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/bitnami/minideb/actions/workflows/main.yml"><img src="https://github.com/bitnami/minideb/actions/workflows/main.yml/badge.svg?branch=master" /></a>
+    <a href="https://github.com/bitnami/minideb/actions/workflows/cd.yml"><img src="https://github.com/bitnami/minideb/actions/workflows/cd.yml/badge.svg?branch=master" /></a>
     <a href="https://hub.docker.com/r/bitnami/minideb/"><img src="https://badgen.net/docker/pulls/bitnami/minideb?icon=docker&label=pulls" /></a>
     <a href="https://hub.docker.com/r/bitnami/minideb/"><img src="https://badgen.net/docker/stars/bitnami/minideb?icon=docker&label=stars" /></a>
     <a href="https://github.com/bitnami/minideb"><img src="https://badgen.net/github/forks/bitnami/minideb?icon=github&color=grey" /></a>
