@@ -8,13 +8,13 @@ on:
 permissions: {}
 env:
   BASENAME: bitnami/minideb
-  LATEST: bookworm
+  LATEST: trixie
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   shellcheck:
     # The type of runner that the job will run on
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Shellcheck
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -28,11 +28,11 @@ jobs:
         run: |
           bash shellcheck
   build_multiarch:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [ shellcheck ]
     strategy:
       matrix:
-        dist: [bullseye, bookworm]
+        dist: [bullseye, bookworm, trixie]
         arch: [amd64, arm64]
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
     steps:

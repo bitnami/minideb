@@ -6,6 +6,7 @@ set -o pipefail
 
 DISTS=${DISTS:-"bullseye
 bookworm
+trixie
 latest
 "}
 

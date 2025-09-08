@@ -14,13 +14,13 @@ on:
 permissions: {}
 env:
   BASENAME: bitnami/minideb
-  LATEST: bookworm
+  LATEST: trixie
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   shellcheck:
     # The type of runner that the job will run on
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.event_name != 'schedule' || github.repository == 'bitnami/minideb'
     name: Shellcheck
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -35,11 +35,11 @@ jobs:
         run: |
           bash shellcheck
   build_multiarch:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [ shellcheck ]
     strategy:
       matrix:
-        dist: [bullseye, bookworm]
+        dist: [bullseye, bookworm, trixie]
         arch: [amd64, arm64]
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
     steps:
@@ -80,7 +80,7 @@ jobs:
              bash pushone "latest" "${{ matrix.arch }}"
           fi
   deploy_manifests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [ build_multiarch ]
     if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
 
@@ -92,7 +92,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKER_REGISTRY: docker.io
         run: |
-          DISTS="bullseye bookworm latest" bash pushmanifest
+          DISTS="bullseye bookworm trixie latest" bash pushmanifest
       - name: Push Manifests to AWS
         env:
           DOCKER_USERNAME: AWS
@@ -102,7 +102,7 @@ jobs:
         run: |
           # AWS login
           export DOCKER_PASSWORD="$(aws ecr-public get-login-password --region us-east-1)"
-          DISTS="bullseye bookworm latest" bash pushmanifest
+          DISTS="bullseye bookworm trixie latest" bash pushmanifest
   # If the CI Pipeline does not succeed we should notify the interested agents
   notify:
     name: Send notification
