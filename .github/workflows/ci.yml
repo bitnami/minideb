@@ -8,7 +8,7 @@ on:
 permissions: {}
 env:
   BASENAME: bitnami/minideb
-  LATEST: bookworm
+  LATEST: trixie
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -32,7 +32,7 @@ jobs:
     needs: [ shellcheck ]
     strategy:
       matrix:
-        dist: [bullseye, bookworm]
+        dist: [bullseye, bookworm, trixie]
         arch: [amd64, arm64]
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
     steps:
