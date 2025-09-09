@@ -22,7 +22,7 @@ runs:
     - name: "Install QEMU"
       run: |
         set -x
-        if [[ "${{ inputs.platform }}" == "arm64" ]]; then
+        if [[ "${{ inputs.platform }}" == "arm64" && "$(uname -m)" != "aarch64"  ]]; then
           echo "Installing QEMU"
           sudo apt-get update -qq && sudo apt-get install -y qemu-user-static
         else

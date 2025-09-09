@@ -28,13 +28,15 @@ jobs:
         run: |
           bash shellcheck
   build_multiarch:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.arch.platform }}
     needs: [ shellcheck ]
     strategy:
       matrix:
         dist: [bullseye, bookworm, trixie]
-        arch: [amd64, arm64]
-    name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
+        arch:
+            - { name: amd64, platform: ubuntu-24.04 }
+            - { name: arm64, platform: ubuntu-24.04-arm }
+    name: Build ${{ matrix.dist }} on ${{ matrix.arch.name }}
     steps:
       - name: Check out repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
@@ -43,5 +45,5 @@ jobs:
         uses: ./.github/actions/build
         with:
           dist: "${{ matrix.dist }}"
-          platform: "${{ matrix.arch }}"
+          platform: "${{ matrix.arch.name }}"
           is_latest: ${{ matrix.dist == env.LATEST }}

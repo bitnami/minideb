@@ -35,13 +35,15 @@ jobs:
         run: |
           bash shellcheck
   build_multiarch:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.arch.platform }}
     needs: [ shellcheck ]
     strategy:
       matrix:
         dist: [bullseye, bookworm, trixie]
-        arch: [amd64, arm64]
-    name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
+        arch:
+          - { name: amd64, platform: ubuntu-24.04 }
+          - { name: arm64, platform: ubuntu-24.04-arm }
+    name: Build ${{ matrix.dist }} on ${{ matrix.arch.name }}
     steps:
       - name: Check out repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
@@ -50,7 +52,7 @@ jobs:
         uses: ./.github/actions/build
         with:
           dist: "${{ matrix.dist }}"
-          platform: "${{ matrix.arch }}"
+          platform: "${{ matrix.arch.name }}"
           is_latest: ${{ matrix.dist == env.LATEST }}
       - name: Push to DockerHUB
         if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
@@ -61,9 +63,9 @@ jobs:
           DOCKER_CONTENT_TRUST_REPOSITORY_KEY: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_KEY }}
           DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
         run: |
-          bash pushone "${{ matrix.dist }}" "${{ matrix.arch }}"
+          bash pushone "${{ matrix.dist }}" "${{ matrix.arch.name }}"
           if ${{ matrix.dist == env.LATEST }} ; then
-             bash pushone "latest" "${{ matrix.arch }}"
+             bash pushone "latest" "${{ matrix.arch.name }}"
           fi
       - name: Push to AWS
         if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
@@ -75,9 +77,9 @@ jobs:
         run: |
           # AWS login
           export DOCKER_PASSWORD="$(aws ecr-public get-login-password --region us-east-1)"
-          bash pushone "${{ matrix.dist }}" "${{ matrix.arch }}"
+          bash pushone "${{ matrix.dist }}" "${{ matrix.arch.name }}"
           if ${{ matrix.dist == env.LATEST }} ; then
-             bash pushone "latest" "${{ matrix.arch }}"
+             bash pushone "latest" "${{ matrix.arch.name }}"
           fi
   deploy_manifests:
     runs-on: ubuntu-24.04
