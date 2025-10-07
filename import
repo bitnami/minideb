@@ -31,7 +31,7 @@ import() {
     local MANIFEST="$(echo -n "$MANIFEST_TEMPLATE" | sed -e "s/%CONF_SHA%/$CONF_SHA/g" -e "s/%LAYERSUM%/$LAYERSUM/g")"
     echo -n "$MANIFEST" > $TDIR/manifest.json
     tar cf $TDIR/import.tar -C $TDIR manifest.json "${CONF_SHA}.json" "$LAYERSUM"
-    local ID=$(docker load -i $TDIR/import.tar | awk '{print $4}')
+    local ID=$(docker load -i $TDIR/import.tar | grep Loaded\ image | awk '{print $NF}')
     if [ "$ID" != "sha256:$CONF_SHA" ]; then
         echo "Failed to load $ID correctly, expected id to be $CONF_SHA, source in $TDIR" >&2
         exit 1
