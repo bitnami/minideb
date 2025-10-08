@@ -80,6 +80,11 @@ To test the resulting image:
 $ sudo make test-trixie
 ```
 
+Building the image with podman instead of docker is possible, if you replace docker with podman in 4 scripts:
+```
+$ sed -i "s/docker /podman /g" buildone dockerdiff import test
+```
+
 ## Building Minideb for foreign architecture
 Make commands shown above will build an image for the architecture you are currently working on.
 To build an image for a foreign architecture (for example to build a multi-arch image), we provide a
