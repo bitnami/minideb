@@ -116,5 +116,6 @@ jobs:
     with:
       workflow: ${{ github.workflow }}
       job-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      emoji: '🐧'
     secrets:
       webhook-url: ${{ secrets.GCHAT_CONTENT_ALERTS_WEBHOOK_URL }}
