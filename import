@@ -10,6 +10,7 @@
 
 set -e
 set -u
+set -x
 set -o pipefail
 
 SOURCE=${1:?Specify the tarball to import}
