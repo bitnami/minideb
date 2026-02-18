@@ -31,6 +31,7 @@ jobs:
     runs-on: ${{ matrix.arch.platform }}
     needs: [ shellcheck ]
     strategy:
+      fail-fast: false
       matrix:
         dist: [bullseye, bookworm, trixie]
         arch:
