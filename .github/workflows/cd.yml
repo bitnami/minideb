@@ -67,20 +67,6 @@ jobs:
           if ${{ matrix.dist == env.LATEST }} ; then
              bash pushone "latest" "${{ matrix.arch.name }}"
           fi
-      - name: Push to AWS
-        if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
-        env:
-          DOCKER_USERNAME: AWS
-          DOCKER_REGISTRY: public.ecr.aws
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_PUBLIC_GALLERY_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_PUBLIC_GALLERY_SECRET_KEY }}
-        run: |
-          # AWS login
-          export DOCKER_PASSWORD="$(aws ecr-public get-login-password --region us-east-1)"
-          bash pushone "${{ matrix.dist }}" "${{ matrix.arch.name }}"
-          if ${{ matrix.dist == env.LATEST }} ; then
-             bash pushone "latest" "${{ matrix.arch.name }}"
-          fi
   deploy_manifests:
     runs-on: ubuntu-24.04
     needs: [ build_multiarch ]
@@ -94,16 +80,6 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKER_REGISTRY: docker.io
         run: |
-          DISTS="bullseye bookworm trixie latest" bash pushmanifest
-      - name: Push Manifests to AWS
-        env:
-          DOCKER_USERNAME: AWS
-          DOCKER_REGISTRY: public.ecr.aws
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_PUBLIC_GALLERY_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_PUBLIC_GALLERY_SECRET_KEY }}
-        run: |
-          # AWS login
-          export DOCKER_PASSWORD="$(aws ecr-public get-login-password --region us-east-1)"
           DISTS="bullseye bookworm trixie latest" bash pushmanifest
   # If the CI Pipeline does not succeed we should notify the interested agents
   notify:
