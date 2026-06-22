@@ -26,7 +26,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - name: Install Dependencies
         run: |
           sudo apt-get -qq update
@@ -46,7 +46,7 @@ jobs:
     name: Build ${{ matrix.dist }} on ${{ matrix.arch.name }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - name: Use local build action
         id: build
         uses: ./.github/actions/build
@@ -73,7 +73,7 @@ jobs:
     if: github.repository == 'bitnami/minideb' && github.ref == 'refs/heads/master'
 
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - name: Push Manifests to DockerHUB
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
