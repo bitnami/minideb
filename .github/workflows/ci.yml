@@ -2,7 +2,10 @@ name: CI
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on pull request events
+  # Triggers the workflow on push on the master branch and PRs
+  push:
+    branches:
+      - master
   pull_request:
 # Remove all permissions by default
 permissions: {}
