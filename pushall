@@ -14,19 +14,14 @@ if [ -n "${DOCKER_PASSWORD:-}" ]; then
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
 fi
 
-ENABLE_DOCKER_CONTENT_TRUST=0
-if [ -n "${DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE:-}" ] && [ -n "${DOCKER_CONTENT_TRUST_REPOSITORY_KEY:-}" ]; then
-    tmpdir=$(mktemp -d)
-    (cd "${tmpdir}" && bash -c 'echo -n "${DOCKER_CONTENT_TRUST_REPOSITORY_KEY}" | base64 -d > key')
-    chmod 400 "${tmpdir}/key"
-    docker trust key load "${tmpdir}/key"
-    rm -rf "${tmpdir}"
-    export ENABLE_DOCKER_CONTENT_TRUST=1
-fi
-
 push() {
     local dist="$1"
-    DOCKER_CONTENT_TRUST=${ENABLE_DOCKER_CONTENT_TRUST} docker push "${BASENAME}:${dist}"
+    local image="${BASENAME}:${dist}"
+    docker push "${image}"
+    
+    if [ -n "${COSIGN_PRIVATE_KEY:-}" ] && [ -n "${COSIGN_PASSWORD:-}" ]; then
+        cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${image}"
+    fi
 }
 
 for DIST in $DISTS; do
