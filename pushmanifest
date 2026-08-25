@@ -54,6 +54,14 @@ push_manifest() {
     done
     run_docker manifest create "$image" "${arch_images[@]}"
     run_docker manifest push "$image"
+    
+    if [ -n "${COSIGN_PRIVATE_KEY:-}" ] && [ -n "${COSIGN_PASSWORD:-}" ]; then
+        if [[ -n "${DRY_RUN:-}" ]]; then
+            echo "DRY RUN cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${image}"
+        else
+            cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${image}"
+        fi
+    fi
 }
 
 tags=()
