@@ -9,14 +9,16 @@ bookworm
 "
 LATEST=bookworm
 BASENAME=bitnami/minideb
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-"docker.io"}
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
-    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin "${DOCKER_REGISTRY}"
 fi
 
 push() {
     local dist="$1"
-    local image="${BASENAME}:${dist}"
+    local image="${DOCKER_REGISTRY}/${BASENAME}:${dist}"
+    docker tag "${BASENAME}:${dist}" "${image}"
     docker push "${image}"
     
     if [ -n "${COSIGN_PRIVATE_KEY:-}" ] && [ -n "${COSIGN_PASSWORD:-}" ]; then
@@ -28,7 +30,7 @@ for DIST in $DISTS; do
     push "$DIST"
 done
 
-docker tag "${BASENAME}:${LATEST}" "${BASENAME}:latest"
+docker tag "${BASENAME}:${LATEST}" "${DOCKER_REGISTRY}/${BASENAME}:latest"
 
 push latest
 
@@ -39,6 +41,6 @@ CIRCLE_CI_FUNCTIONS_URL=${CIRCLE_CI_FUNCTIONS_URL:-https://raw.githubusercontent
 source <(curl -sSL "$CIRCLE_CI_FUNCTIONS_URL")
 for DIST in $DISTS; do
     # Use '.RepoDigests 0' for getting Dockerhub repo digest as it was the first pushed
-    DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "${BASENAME}:${DIST}")
+    DIST_REPO_DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "${DOCKER_REGISTRY}/${BASENAME}:${DIST}")
     update_minideb_derived "https://github.com/bitnami/minideb-runtimes" "$DIST" "$DIST_REPO_DIGEST"
 done
