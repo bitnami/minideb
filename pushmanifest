@@ -63,7 +63,13 @@ push_manifest() {
         if [[ -n "${DRY_RUN:-}" ]]; then
             echo "DRY RUN cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${image}"
         else
-            cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${image}"
+            # We need the digest for cosign sign
+            local digest=$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")
+            if [ -n "$digest" ]; then
+                cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${digest}"
+            else
+                echo "Warning: Could not get digest for ${image}, skipping cosign sign"
+            fi
         fi
     fi
 }

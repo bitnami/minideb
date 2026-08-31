@@ -28,7 +28,13 @@ push() {
     docker push "${image}"
     
     if [ -n "${COSIGN_PRIVATE_KEY:-}" ] && [ -n "${COSIGN_PASSWORD:-}" ]; then
-        cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${image}"
+        # We need the digest for cosign sign
+        local digest=$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")
+        if [ -n "$digest" ]; then
+            cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${digest}"
+        else
+            echo "Warning: Could not get digest for ${image}, skipping cosign sign"
+        fi
     fi
 }
 
