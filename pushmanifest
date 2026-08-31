@@ -74,7 +74,10 @@ for DIST in $DISTS; do
     tags+=("$DIST")
 done
 
-repositories=("${DOCKER_REGISTRY}/${BASENAME}")
+repositories=("${BASENAME}")
+if [ "${DOCKER_REGISTRY}" != "docker.io" ]; then
+    repositories=("${DOCKER_REGISTRY}/${BASENAME}")
+fi
 
 for tag in "${tags[@]}"; do
     for repo in "${repositories[@]}"; do

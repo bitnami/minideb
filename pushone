@@ -20,8 +20,11 @@ fi
 
 push() {
     local dist="$1"
-    local image="${DOCKER_REGISTRY}/${BASENAME}:${dist}"
-    docker tag "${BASENAME}:${dist}" "${image}"
+    local image="${BASENAME}:${dist}"
+    if [ "${DOCKER_REGISTRY}" != "docker.io" ]; then
+        image="${DOCKER_REGISTRY}/${image}"
+        docker tag "${BASENAME}:${dist}" "${image}"
+    fi
     docker push "${image}"
     
     if [ -n "${COSIGN_PRIVATE_KEY:-}" ] && [ -n "${COSIGN_PASSWORD:-}" ]; then
