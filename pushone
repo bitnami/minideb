@@ -29,7 +29,8 @@ push() {
     
     if [ -n "${COSIGN_PRIVATE_KEY:-}" ] && [ -n "${COSIGN_PASSWORD:-}" ]; then
         # We need the digest for cosign sign
-        local digest=$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")
+        local digest
+        digest=$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")
         if [ -n "$digest" ]; then
             cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${digest}"
         else
