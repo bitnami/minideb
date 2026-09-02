@@ -56,7 +56,7 @@ push_manifest() {
     for arch in "${archs[@]}"; do
         arch_images+=("$image-$arch")
     done
-    run_docker manifest create "$image" "${arch_images[@]}"
+    run_docker manifest create --amend "$image" "${arch_images[@]}"
     run_docker manifest push "$image"
     
     if [ -n "${COSIGN_PRIVATE_KEY:-}" ] && [ -n "${COSIGN_PASSWORD:-}" ]; then
