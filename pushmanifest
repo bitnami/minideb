@@ -40,7 +40,11 @@ list_includes() {
 }
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
-    echo "$DOCKER_PASSWORD" | run_docker login -u "$DOCKER_USERNAME" --password-stdin "${DOCKER_REGISTRY}"
+    if [ "${DOCKER_REGISTRY}" = "docker.io" ]; then
+        echo "$DOCKER_PASSWORD" | run_docker login -u "$DOCKER_USERNAME" --password-stdin
+    else
+        echo "$DOCKER_PASSWORD" | run_docker login -u "$DOCKER_USERNAME" --password-stdin "${DOCKER_REGISTRY}"
+    fi
 fi
 
 push_manifest() {
@@ -52,14 +56,21 @@ push_manifest() {
     for arch in "${archs[@]}"; do
         arch_images+=("$image-$arch")
     done
-    run_docker manifest create "$image" "${arch_images[@]}"
+    run_docker manifest create --amend "$image" "${arch_images[@]}"
     run_docker manifest push "$image"
     
     if [ -n "${COSIGN_PRIVATE_KEY:-}" ] && [ -n "${COSIGN_PASSWORD:-}" ]; then
         if [[ -n "${DRY_RUN:-}" ]]; then
             echo "DRY RUN cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${image}"
         else
-            cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${image}"
+            # We need the digest for cosign sign
+            local digest
+            digest=$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")
+            if [ -n "$digest" ]; then
+                cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${digest}"
+            else
+                echo "Warning: Could not get digest for ${image}, skipping cosign sign"
+            fi
         fi
     fi
 }
@@ -70,7 +81,10 @@ for DIST in $DISTS; do
     tags+=("$DIST")
 done
 
-repositories=("${DOCKER_REGISTRY}/${BASENAME}")
+repositories=("${BASENAME}")
+if [ "${DOCKER_REGISTRY}" != "docker.io" ]; then
+    repositories=("${DOCKER_REGISTRY}/${BASENAME}")
+fi
 
 for tag in "${tags[@]}"; do
     for repo in "${repositories[@]}"; do

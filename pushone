@@ -11,17 +11,31 @@ BASENAME=bitnami/minideb
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-"docker.io"}
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
-    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin "${DOCKER_REGISTRY}"
+    if [ "${DOCKER_REGISTRY}" = "docker.io" ]; then
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    else
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin "${DOCKER_REGISTRY}"
+    fi
 fi
 
 push() {
     local dist="$1"
-    local image="${DOCKER_REGISTRY}/${BASENAME}:${dist}"
-    docker tag "${BASENAME}:${dist}" "${image}"
+    local image="${BASENAME}:${dist}"
+    if [ "${DOCKER_REGISTRY}" != "docker.io" ]; then
+        image="${DOCKER_REGISTRY}/${image}"
+        docker tag "${BASENAME}:${dist}" "${image}"
+    fi
     docker push "${image}"
     
     if [ -n "${COSIGN_PRIVATE_KEY:-}" ] && [ -n "${COSIGN_PASSWORD:-}" ]; then
-        cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${image}"
+        # We need the digest for cosign sign
+        local digest
+        digest=$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")
+        if [ -n "$digest" ]; then
+            cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${digest}"
+        else
+            echo "Warning: Could not get digest for ${image}, skipping cosign sign"
+        fi
     fi
 }
 
