@@ -23,7 +23,15 @@ cp -a "${ROOT}/debootstrap/"* "${DEBOOTSTRAP_DIR}/scripts"
 KEYRING=$DEBOOTSTRAP_DIR/debian-archive-keyring.gpg
 
 use_qemu_static() {
-    [[ "$PLATFORM" == "arm64" && ! ( "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ) ]]
+    [[ "$PLATFORM" != "$(dpkg --print-architecture)" ]]
+}
+
+qemu_static_arch() {
+    case "$PLATFORM" in
+        amd64) echo x86_64 ;;
+        arm64) echo aarch64 ;;
+        *) echo "$PLATFORM" ;;
+    esac
 }
 
 export DEBIAN_FRONTEND=noninteractive
@@ -60,10 +68,10 @@ rootfs_chroot() {
 if use_qemu_static ; then
     echo "Setting up qemu static in chroot"
     usr_bin_modification_time=$(stat -c %y "$rootfsDir"/usr/bin)
-    if [ -f "/usr/bin/qemu-aarch64-static" ]; then
+    if [ -f "/usr/bin/qemu-$(qemu_static_arch)-static" ]; then
         find /usr/bin/ -type f -name 'qemu-*-static' -exec cp {} "$rootfsDir"/usr/bin/. \;
     else
-        echo "Cannot find aarch64 qemu static. Aborting..." >&2
+        echo "Cannot find $(qemu_static_arch) qemu static. Aborting..." >&2
         exit 1
     fi
     touch -d "$usr_bin_modification_time" "$rootfsDir"/usr/bin
