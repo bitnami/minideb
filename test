@@ -59,7 +59,7 @@ test bash -c '[ ! -e /debootstrap ]'
 desc "Check that all base packages are correctly installed, including dependencies"
 # Ask apt to install all packages that are already installed, has the effect of checking the
 # dependencies are correctly available
-test bash -c 'apt-get update && (dpkg-query -W -f \${Package} | while read pkg; do apt-get install $pkg; done)'
+test bash -c 'apt-get update && apt-get install -y $(dpkg-query -W -f "\${Package}\n")'
 
 desc "Check that install_packages doesn't loop forever on failures"
 # This won't install and will fail. The key is that the retry loop will stop after a few iterations.
@@ -71,11 +71,11 @@ test bash -c 'timeout 360 bash -c "(install_packages thispackagebetternotexist |
 desc "Checking that the terminfo is valid when running with -t (#17)"
 echo "" | test_extra_args '-t' bash -c 'install_packages procps && top -d1 -n1 -b'
 
-MYSQL_PACKAGE=default-mysql-server
+TEST_PACKAGE=lighttpd
 
 # See https://github.com/bitnami/minideb/issues/16
-desc "Check that we can install mysql-server (#16)"
-test install_packages $MYSQL_PACKAGE
+desc "Check that we can install a package with service triggers (#16)"
+test install_packages $TEST_PACKAGE
 
 function shadow_check() {
     local path=$1
