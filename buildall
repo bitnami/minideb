@@ -8,8 +8,7 @@ set -o pipefail
 
 arch=${1:-"amd64 arm64"}
 
-dist="bullseye
-bookworm
+dist="bookworm
 trixie
 "
 for a in $arch; do

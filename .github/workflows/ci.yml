@@ -35,7 +35,7 @@ jobs:
     needs: [ shellcheck ]
     strategy:
       matrix:
-        dist: [bullseye, bookworm, trixie]
+        dist: [bookworm, trixie]
         arch:
             - { name: amd64, platform: ubuntu-24.04 }
             - { name: arm64, platform: ubuntu-24.04-arm }

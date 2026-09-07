@@ -3,6 +3,6 @@
 set -eu
 set -o pipefail
 
-SCRIPTS=(shellcheck mkimage buildone buildall pushall)
+SCRIPTS=(shellcheck mkimage buildone buildall)
 
 shellcheck -s bash "${SCRIPTS[@]}"
